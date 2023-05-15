@@ -1,6 +1,23 @@
 {
   "expo": {
     "scheme": "acme",
-    "web": { "bundler": "metro" }
+    "web": {
+      "bundler": "metro"
+    },
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to conduct video calls.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to conduct video calls."
+      },
+      "bundleIdentifier": "com.tce.I"
+    },
+    "android": {
+      "package": "com.acme.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO"
+      ]
+    }
   }
 }
