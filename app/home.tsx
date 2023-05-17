@@ -7,7 +7,9 @@ import ProfilePictureSetup from "./pfp";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign, Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import supabase from "../hooks/initSupabase";
-import useCall from "../hooks/useCall";
+import Call from "../hooks/useCall";
+import Matchmaking from "../types/matchmaking";
+import { useRouter } from "expo-router";
 
 const Init = () => {
   const [uid, userInfo] = useRef(useUserInfo()).current;
@@ -49,23 +51,19 @@ const Init = () => {
 export default Init;
 
 const Home = () => {
+  const router = useRef(useRouter()).current;
   const [uid, userInfo] = useUserInfo();
-  const peer = useRef(useCall()).current;
+  const user = userInfo as UserInfo;
 
-  const launchCall = () => {
-    //const user = userInfo as UserInfo;
+  const launchCall = async () => {
+    const call = new Call(user.socials, user.username, router);
+    const peer = await call.listenForMatch(1);
 
-    //if (!user) return;
-    //if (user.loading) return;
-    //if (user.socials) {
-    //  supabase.from("matchmaking").insert([
-    //    {
-    //      socials: user.socials,
-    //      username: user.username,
-    //    },
-    //  ]);
-    //}
-    console.log(peer);
+    if (peer) {
+      call.call(peer);
+      // redirects to call screen on stream
+    }
+    
   };
 
   const Panel = () => {
@@ -130,7 +128,7 @@ const Home = () => {
             justifyContent: "space-evenly",
           }}
         >
-          <CircleIcon onPress={() => launchCall()}>
+          <CircleIcon onPress={() => {}}>
             <AntDesign name="pluscircleo" size={28} color="#3FCCC0" />
           </CircleIcon>
           <CircleIcon
@@ -358,7 +356,9 @@ const Home = () => {
         }}
       >
         <Pressable
-          onPress={() => launchCall()}
+          onPress={() => {
+            launchCall();
+          }}
           style={{
             flex: 1,
             backgroundColor: "#33b9b9",

@@ -36,7 +36,7 @@ export const useUserInfo = () => {
       }
     };
     getUserInfo();
-  }, [user]);
+  }, []);
 
   if (userInfo) {
     return [user.user.id, userInfo as UserInfo];
