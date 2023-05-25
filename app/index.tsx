@@ -1,9 +1,9 @@
-import { SafeAreaView, Text } from "react-native";
 import { CLERK_PUBLISHABLE_KEY } from "@env";
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
 import Welcome from "./welcome";
 import Home from "./home";
+import AdminPage from "./admin";
 
 const App = () => {
   const tokenCache = {
@@ -33,6 +33,7 @@ const App = () => {
       </SignedOut>
       <SignedIn>
         <Home />
+        {/*<AdminPage />*/}
       </SignedIn>
     </ClerkProvider>
   );

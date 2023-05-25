@@ -22,8 +22,6 @@ const GradientStreak = ({ style }) => {
 
 // shown when two users agree to sending each other their socials
 
-// DB password: gacpig-wyzWu3-wehfut
-
 type CongrastProps = {
   peerUsername: string;
   pfp: JSX.Element;

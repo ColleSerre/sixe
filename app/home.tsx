@@ -1,59 +1,73 @@
-import { Text, View, StyleSheet, Pressable } from "react-native";
-import { UserInfo, useUserInfo } from "../hooks/useUserInfo";
-import { useEffect, useRef, useState } from "react";
+import { Text, View, Pressable } from "react-native";
+import { useEffect, useRef, useState, createContext } from "react";
 import Welcome from "./welcome";
 import SetSocials from "./setSocials";
 import ProfilePictureSetup from "./pfp";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign, Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
-import supabase from "../hooks/initSupabase";
 import Call from "../hooks/useCall";
-import Matchmaking from "../types/matchmaking";
 import { useRouter } from "expo-router";
+import EventsShowcase from "../components/EventsShowcase";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from "@gorhom/bottom-sheet";
+import EventCard from "../components/EventCard";
+import Users from "../types/users";
+import Events from "../types/events";
 
-const Init = () => {
-  const [uid, userInfo] = useRef(useUserInfo()).current;
-  const [route, setRoute] = useState("home");
+import { UserInfoProvider, useUserInfo } from "../components/UserProvider";
+
+const UserRouting = () => {
+  const userInfo = useUserInfo();
+  const [route, setRoute] = useState<string | null>(null);
 
   useEffect(() => {
-    const user = userInfo as UserInfo;
+    if (userInfo === "loading") return;
 
-    if (user.loading) return;
-
-    if (!user) {
+    if (userInfo === null) {
       setRoute("welcome");
     } else {
+      const user = userInfo as Users;
       if (!user.profile_picture) {
         setRoute("pfp");
-      }
-      if (!user.socials) {
+      } else if (!user.socials) {
         setRoute("socials");
-      }
-      if (user.socials && user.profile_picture) {
+      } else {
         setRoute("home");
       }
     }
-  }, []);
+  }, [userInfo]);
 
-  if (route === "welcome") {
-    return <Welcome />;
-  } else if (route === "pfp") {
-    return <ProfilePictureSetup />;
-  } else if (route === "socials") {
-    return <SetSocials />;
-  } else if (route === "home") {
-    return <Home />;
-  } else {
-    return <Text>Something went wrong: {route}</Text>;
-  }
+  const renderScreen = () => {
+    switch (route) {
+      case "welcome":
+        return <Welcome />;
+      case "pfp":
+        return <ProfilePictureSetup />;
+      case "socials":
+        return <SetSocials />;
+      case "home":
+        return userInfo ? <Home /> : null;
+      case null:
+        return;
+    }
+  };
+
+  return renderScreen();
 };
 
-export default Init;
+export default function App() {
+  return (
+    <UserInfoProvider>
+      <UserRouting />
+    </UserInfoProvider>
+  );
+}
 
 const Home = () => {
   const router = useRef(useRouter()).current;
-  const [uid, userInfo] = useUserInfo();
-  const user = userInfo as UserInfo;
+  const user = useUserInfo() as Users;
 
   const launchCall = async () => {
     const call = new Call(user.socials, user.username, router);
@@ -63,7 +77,6 @@ const Home = () => {
       call.call(peer);
       // redirects to call screen on stream
     }
-    
   };
 
   const Panel = () => {
@@ -143,133 +156,6 @@ const Home = () => {
     );
   };
 
-  const Drop = () => {
-    const Countdown = () => {
-      return (
-        <View
-          style={{
-            flex: 3,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 45,
-              color: "#fff",
-            }}
-          >
-            15:23:12:30
-          </Text>
-        </View>
-      );
-    };
-
-    const Labels = () => {
-      const Pill = ({ flex, text }) => {
-        return (
-          <View
-            style={{
-              flex: flex,
-              height: 30,
-              backgroundColor: "#fff",
-              borderRadius: 26,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 15,
-                color: "#3FCCC0",
-              }}
-            >
-              {text}
-            </Text>
-          </View>
-        );
-      };
-
-      return (
-        <View
-          style={{
-            flex: 1,
-            gap: 10,
-            marginBottom: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 5,
-            }}
-          >
-            <Pill flex={1} text="AI" />
-            <Pill flex={3} text="Mental Health" />
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 5,
-            }}
-          >
-            <Pill flex={2} text="Social Media" />
-            <Pill flex={1} text="Work" />
-          </View>
-        </View>
-      );
-    };
-
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(217, 217, 217, 0.4)",
-          borderRadius: 26,
-          padding: 25,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-        >
-          Next drop:
-        </Text>
-        <Countdown />
-        <Labels />
-        <View
-          style={{
-            width: "100%",
-            height: 50,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            backgroundColor: "#1e1e1e",
-            borderRadius: 26,
-            padding: 15,
-            // shadow
-            shadowColor: "#fff",
-            shadowOffset: {
-              width: 0,
-              height: 0,
-            },
-            shadowOpacity: 0.87,
-            shadowRadius: 9,
-            elevation: 6,
-          }}
-        >
-          <Text style={{ fontWeight: "500", color: "white" }}>
-            Join the wishlist
-          </Text>
-          <AntDesign name="play" size={20} color="#3FCCC0" />
-        </View>
-      </View>
-    );
-  };
-
   const StartCall = () => {
     return (
       <Pressable
@@ -294,97 +180,110 @@ const Home = () => {
     );
   };
 
-  return (
-    <LinearGradient
-      colors={["#805DE3", "#0095FF"]}
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={{
-        flex: 1,
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        paddingHorizontal: 20,
-        paddingVertical: 30,
-        paddingTop: 50,
-        gap: 17,
-      }}
-    >
-      <View
-        style={{
-          height: 170,
-          flexDirection: "row",
-          gap: 15,
-        }}
-      >
-        <View
-          style={{
-            flex: 2,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#1e1e1e",
-            shadowColor: "#000",
+  const [eventData, setEventData] = useState<Events>();
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const snapPoints = ["60%"];
 
-            elevation: 3,
-            borderRadius: 30,
-            marginRight: 10,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 40,
-              color: "white",
-              fontFamily: "Times New Roman",
-            }}
-          >
-            I
-          </Text>
-        </View>
-        <Panel />
-      </View>
-      <View
-        style={{
-          flex: 4,
-          flexDirection: "row",
-        }}
-      >
-        <Drop />
-      </View>
-      <View
+  return (
+    <BottomSheetModalProvider>
+      <LinearGradient
+        colors={["#805DE3", "#0095FF"]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
           flex: 1,
-          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+          paddingHorizontal: 20,
+          paddingVertical: 30,
+          paddingTop: 50,
+          gap: 17,
         }}
       >
-        <Pressable
-          onPress={() => {
-            launchCall();
-          }}
+        {/* Top Row */}
+        <View
           style={{
-            flex: 1,
-            backgroundColor: "#33b9b9",
-            opacity: 0.96,
-            borderRadius: 26,
-            alignItems: "center",
-            justifyContent: "center",
+            height: 170,
+            flexDirection: "row",
+            gap: 15,
           }}
         >
-          <Text
+          <View
             style={{
-              fontSize: 20,
-              color: "#fff",
+              flex: 2,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#1e1e1e",
+              shadowColor: "#000",
+
+              elevation: 3,
+              borderRadius: 30,
+              marginRight: 10,
             }}
           >
-            Join Call
-          </Text>
-        </Pressable>
-      </View>
-    </LinearGradient>
+            <Text
+              style={{
+                fontSize: 40,
+                color: "white",
+                fontFamily: "Times New Roman",
+              }}
+            >
+              I
+            </Text>
+          </View>
+          <Panel />
+        </View>
+        {/* Events Panel */}
+        <View
+          style={{
+            flex: 4,
+            flexDirection: "row",
+          }}
+        >
+          <EventsShowcase
+            friends={user.friends}
+            bottomSheetRef={bottomSheetRef}
+            onPress={setEventData}
+          />
+        </View>
+        {/* Start Call Button */}
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+          }}
+        >
+          <Pressable
+            onPress={() => {
+              launchCall();
+            }}
+            style={{
+              flex: 1,
+              backgroundColor: "#33b9b9",
+              opacity: 0.96,
+              borderRadius: 26,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                color: "#fff",
+              }}
+            >
+              Join Call
+            </Text>
+          </Pressable>
+        </View>
+      </LinearGradient>
+      <BottomSheetModal
+        snapPoints={snapPoints}
+        ref={bottomSheetRef}
+        backgroundStyle={{ backgroundColor: "#F4F2E5" }}
+      >
+        <EventCard eventData={eventData} />
+      </BottomSheetModal>
+    </BottomSheetModalProvider>
   );
 };
-
-/*
-# MindMate log[1]: coliding ideas and the birth of a design system
-
-The past month has been very productive for the MindMate project and here's what I've learned about design, product development, and the importance of building in public.
-
-*/

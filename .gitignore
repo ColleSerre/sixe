@@ -62,3 +62,8 @@ buck-out/
 # Expo
 .expo/*
 web-build/
+
+# Personal
+.env
+node_modules
+package-lock.json

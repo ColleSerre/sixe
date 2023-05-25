@@ -3,16 +3,17 @@ import Matchmaking from "../types/matchmaking";
 import supabase from "./initSupabase";
 import Peer from "react-native-peerjs";
 import { mediaDevices } from "react-native-webrtc";
+import { Prisma } from "@prisma/client";
 
 class Call {
   peer = new Peer();
-  socials: Record<string, any>;
+  socials: Prisma.JsonValue;
   username: string;
   mediaStream: any;
   router: any; // router for navigation, can be used during the call ?
 
   // constructor that sets up local variables
-  constructor(socials: Record<string, any>, username: string, router) {
+  constructor(socials: Prisma.JsonValue, username: string, router) {
     this.socials = socials;
     this.username = username;
     this.router = router;

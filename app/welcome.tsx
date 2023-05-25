@@ -4,19 +4,20 @@ import { Feather } from "@expo/vector-icons";
 import { useSignUp, useSignIn } from "@clerk/clerk-expo";
 import { Pressable, View, TextInput, Alert, Text } from "react-native";
 import { Entypo } from "@expo/vector-icons";
-import supabase from "../hooks/initSupabase";
 import { Snackbar } from "react-native-paper";
+import Users from "../types/users";
+import supabase from "../hooks/initSupabase";
 
 const Welcome = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
   const { signIn } = useSignIn();
 
   const [login, setLogin] = React.useState(false);
-  const [emailAddress, setEmailAddress] = React.useState(
+  const [username, setUsername] = React.useState<string>("admin");
+  const [emailAddress, setEmailAddress] = React.useState<string>(
     "daren.palmer.22@ucl.ac.uk"
   );
-  const [username, setUsername] = React.useState("ddp");
-  const [password, setPassword] = React.useState("1of16VVs");
+  const [password, setPassword] = React.useState<string>("1of16VVs");
   const [showPassword, setShowPassword] = React.useState(false);
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
@@ -25,37 +26,42 @@ const Welcome = () => {
     if (!isLoaded) {
       return;
     }
-    if (emailAddress.endsWith("@ucl.ac.uk") && username.length > 0) {
-      if (!isLoaded) {
-        return;
-      }
 
-      try {
-        await signUp.create({
-          emailAddress,
-          password,
-        });
-
-        // send the email.
-        await signUp.prepareEmailAddressVerification({
-          strategy: "email_code",
-        });
-
-        // change the UI to our pending section.
-        setPendingVerification(true);
-      } catch (err: any) {
-        if (err.errors[0].code === "form_identifier_exists") {
-          setLogin(true);
-          onLogin();
-        } else {
-          console.error(JSON.stringify(err, null, 2));
+    if (emailAddress && username && password) {
+      if (emailAddress.endsWith("@ucl.ac.uk") && username.length > 0) {
+        if (!isLoaded) {
+          return;
         }
+
+        try {
+          await signUp.create({
+            emailAddress,
+            password,
+          });
+
+          // send the email.
+          await signUp.prepareEmailAddressVerification({
+            strategy: "email_code",
+          });
+
+          // change the UI to our pending section.
+          setPendingVerification(true);
+        } catch (err: any) {
+          if (err.errors[0].code === "form_identifier_exists") {
+            setLogin(true);
+            onLogin();
+          } else {
+            console.error(JSON.stringify(err, null, 2));
+          }
+        }
+      } else {
+        Alert.alert(
+          "Invalid email address",
+          "Please enter a valid UCL email address."
+        );
       }
     } else {
-      Alert.alert(
-        "Invalid email address",
-        "Please enter a valid UCL email address."
-      );
+      Alert.alert("Please fill in all the fields.");
     }
   };
 
@@ -69,15 +75,34 @@ const Welcome = () => {
         code,
       });
       setActive({ session: completeSignUp.createdSessionId });
-      const { data, error } = await supabase.from("Users").insert([
-        {
-          uid: completeSignUp.createdUserId,
-          email: emailAddress,
-          emailVerified: true,
-          username: username,
+
+      const payload: Users = {
+        created_at: new Date(),
+        username: username,
+        socials: {
+          instagram: "",
+          snapchat: "",
+          linkedin: "",
         },
-      ]);
-      console.log(data, error);
+        email_verified: true,
+        email: emailAddress,
+
+        profile_picture: "",
+        uid: completeSignUp.createdUserId,
+        friends: [],
+        created_events: [],
+        participations: [],
+      };
+
+      const { data, error } = await supabase.from("users").insert([payload]);
+
+      if (data) {
+        console.log(data);
+      }
+
+      if (error) {
+        console.error(error);
+      }
     } catch (err: any) {
       console.log(err);
     }
@@ -163,6 +188,9 @@ const Welcome = () => {
           <TextInput
             placeholder="Enter your UCL email"
             onChangeText={(_new) => setEmailAddress(_new)}
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect={false}
             placeholderTextColor={"black"}
             style={{
               padding: 20,
