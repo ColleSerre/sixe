@@ -3,15 +3,12 @@ import Friend from "./friend";
 import Participation from "./participation";
 
 type Users = {
+  annecdote: any;
   uid: string;
   username: string | null;
   email: string | null;
   profile_picture: string | null;
-  socials: {
-    instagram: string | null;
-    snapchat: string | null;
-    linkedin: string | null;
-  } | null;
+  socials: Map<string, string> | null;
   friends: Friend[] | null;
   created_at: Date;
   created_events: Events[];

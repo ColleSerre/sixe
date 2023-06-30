@@ -3,7 +3,9 @@ import { View, Text, Button } from "react-native";
 import { createMockEvent, createMockUser } from "../scripts/createMockData";
 
 const AdminPage = () => {
-  const [selectedUID, setSelectedUID] = useState<string>(null);
+  const [selectedUID, setSelectedUID] = useState<string>(
+    "user_2QBuJAtgtde3tHNDSPhIEBXlXuD"
+  );
 
   return (
     <View
@@ -34,6 +36,7 @@ const AdminPage = () => {
         title={"Create Mock Event"}
         onPress={() => {
           console.log("Creating Mock Event");
+
           if (!selectedUID) {
             console.log("No user selected");
             return;

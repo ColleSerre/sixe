@@ -83,7 +83,7 @@ export const createMockEvent = async (uid: string) => {
     id: eventID,
     title: "Mock Event",
     description: "This is a mock event",
-    date_time: new Date().toUTCString(),
+    date_time: new Date("2023-10-13").toISOString(),
     location: "Mock Location",
     owner: uid,
     participants: [uid, "user_2QBuJAtgtde3tHNDSPhIEBXlXuD"],

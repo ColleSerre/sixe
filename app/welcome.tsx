@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import InfoPage from "../components/InfoPage";
 import { Feather } from "@expo/vector-icons";
 import { useSignUp, useSignIn } from "@clerk/clerk-expo";
@@ -7,6 +7,8 @@ import { Entypo } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
 import Users from "../types/users";
 import supabase from "../hooks/initSupabase";
+import colours from "../styles/colours";
+import textInputStyles from "../styles/TextInput";
 
 const Welcome = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -18,7 +20,6 @@ const Welcome = () => {
     "daren.palmer.22@ucl.ac.uk"
   );
   const [password, setPassword] = React.useState<string>("1of16VVs");
-  const [showPassword, setShowPassword] = React.useState(false);
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
 
@@ -51,17 +52,14 @@ const Welcome = () => {
             setLogin(true);
             onLogin();
           } else {
-            console.error(JSON.stringify(err, null, 2));
+            setSnackbarContent(err.errors[0].message);
           }
         }
       } else {
-        Alert.alert(
-          "Invalid email address",
-          "Please enter a valid UCL email address."
-        );
+        setSnackbarContent("Please use your UCL email address.");
       }
     } else {
-      Alert.alert("Please fill in all the fields.");
+      setSnackbarContent("Please fill in all fields.");
     }
   };
 
@@ -101,7 +99,8 @@ const Welcome = () => {
       }
 
       if (error) {
-        console.error(error);
+        // SNACKBAR THE ERROR
+        setSnackbarContent(error.message);
       }
     } catch (err: any) {
       console.log(err);
@@ -118,18 +117,22 @@ const Welcome = () => {
     }
   };
 
+  const [snackbarContent, setSnackbarContent] = useState("");
+
   return (
     <InfoPage
-      header={"Get Started"}
-      secondary={"Sign-up, it's super easy"}
+      header="Hi,"
+      secondary={"Let's get you set up !"}
       action={
         <>
           <Pressable
             style={{
-              backgroundColor: "#F4F2E5",
+              backgroundColor: colours.chordleMyBallsKraz,
               borderRadius: 25,
-              paddingHorizontal: 40,
-              paddingVertical: 20,
+              width: "60%",
+              height: 50,
+              alignItems: "center",
+              justifyContent: "center",
             }}
             onPress={() => {
               if (!pendingVerification) {
@@ -139,7 +142,15 @@ const Welcome = () => {
               }
             }}
           >
-            <Text>{!pendingVerification ? "Submit" : "Verify"}</Text>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 16,
+                fontWeight: "700",
+              }}
+            >
+              {!pendingVerification ? "Create Account" : "Verify"}
+            </Text>
           </Pressable>
           <Snackbar
             visible={login}
@@ -155,13 +166,8 @@ const Welcome = () => {
         <View
           style={{
             width: "100%",
-            padding: 20,
             paddingVertical: 30,
             gap: 24,
-            borderWidth: 3,
-            borderColor: "#FFFFFF",
-            borderStyle: "solid",
-            borderRadius: 10,
           }}
         >
           <TextInput
@@ -171,19 +177,7 @@ const Welcome = () => {
             autoCapitalize={"none"}
             autoComplete={"off"}
             autoCorrect={false}
-            style={{
-              padding: 20,
-              width: "70%",
-              backgroundColor: "#F4F2E5",
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-              shadowRadius: 4,
-              shadowColor: "rgba(0, 0, 0, 0.25)",
-              shadowOpacity: 1,
-              borderRadius: 10,
-            }}
+            style={{ ...textInputStyles.NeoBrutalistTextField, width: "70%" }}
           />
           <TextInput
             placeholder="Enter your UCL email"
@@ -192,60 +186,23 @@ const Welcome = () => {
             autoCapitalize="none"
             autoCorrect={false}
             placeholderTextColor={"black"}
-            style={{
-              padding: 20,
-              backgroundColor: "#F4F2E5",
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-              shadowRadius: 4,
-              shadowColor: "rgba(0, 0, 0, 0.25)",
-              shadowOpacity: 1,
-              borderRadius: 10,
-            }}
+            style={{ ...textInputStyles.NeoBrutalistTextField }}
           />
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: "#F4F2E5",
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-              shadowRadius: 4,
-              shadowColor: "rgba(0, 0, 0, 0.25)",
-              shadowOpacity: 1,
-              borderRadius: 10,
               justifyContent: "space-between",
             }}
           >
             <TextInput
               placeholder="Password"
               onChangeText={(_new) => setPassword(_new)}
-              secureTextEntry={!showPassword}
               placeholderTextColor={"black"}
-              style={{
-                width: "70%",
-                padding: 20,
-              }}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={{ ...textInputStyles.NeoBrutalistTextField }}
             />
-            <Pressable
-              style={{
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-              }}
-              onPress={() => {
-                setShowPassword(!showPassword);
-              }}
-            >
-              {showPassword ? (
-                <Entypo name="eye-with-line" size={24} color="black" />
-              ) : (
-                <Entypo name="eye" size={24} color="black" />
-              )}
-            </Pressable>
           </View>
         </View>
       )}
@@ -278,6 +235,21 @@ const Welcome = () => {
           />
         </View>
       )}
+
+      <Snackbar
+        visible={snackbarContent.length > 0}
+        duration={5000}
+        style={{
+          backgroundColor: "white",
+          borderColor: colours.error,
+          borderRadius: 10,
+          borderWidth: 3,
+          height: 50,
+        }}
+        onDismiss={() => setSnackbarContent("")}
+      >
+        <Text>{snackbarContent}</Text>
+      </Snackbar>
     </InfoPage>
   );
 };

@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import colours from "../styles/colours";
 // entry point, check for auth and render welcome page if not authed, else, reroute to home page
 
 type InfoPageProps = {
@@ -9,75 +10,80 @@ type InfoPageProps = {
   action?: React.ReactNode;
 };
 
-const InfoPage = (props: InfoPageProps) => {
+const MainText = (props: { content: string }) => {
   return (
-    <LinearGradient
-      colors={["#805DE3", "#0095FF"]}
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 1 }}
+    <Text
       style={{
-        flex: 1,
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        paddingTop: 50,
-        paddingLeft: 20,
-        paddingRight: 20,
+        fontSize: 30,
+        fontWeight: "bold",
+        color: colours.chordleMyBallsKraz,
+        textAlign: "center",
       }}
     >
-      <Text
-        style={{
-          fontStyle: "normal",
-          fontWeight: "500",
-          fontSize: 24,
-          lineHeight: 29,
-          color: "#F4F2E5",
-          marginBottom: 20,
-        }}
-      >
-        {props.header}
-      </Text>
-      {props.secondary && (
-        <Text
-          style={{
-            fontStyle: "normal",
-            fontWeight: "300",
-            color: "#F4F2E5",
-            fontSize: 16,
-            lineHeight: 19,
-          }}
-        >
-          {props.secondary}
-        </Text>
-      )}
+      {props.content}
+    </Text>
+  );
+};
 
+const SecondaryText = (props: { content: string | undefined }) => {
+  return (
+    <Text
+      style={{
+        fontSize: 20,
+        color: "black",
+        textAlign: "center",
+      }}
+    >
+      {props.content}
+    </Text>
+  );
+};
+
+const Action = (props: { action: React.ReactNode | undefined }) => {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      {props.action}
+    </View>
+  );
+};
+
+const InfoPage = (props: InfoPageProps) => {
+  return (
+    <SafeAreaView
+      style={{
+        flex: 1,
+        // align this to the middle of the screen, don't forget to pad everything out a bit (for text)
+        justifyContent: "center",
+        margin: 23,
+        marginTop: 100,
+      }}
+    >
       <View
         style={{
-          flex: 2,
-          width: "100%",
-          flexDirection: "column",
-
-          justifyContent: "center",
+          flex: 1,
+          justifyContent: "flex-start",
           alignItems: "flex-start",
-          gap: 18,
+        }}
+      >
+        <MainText content={props.header} />
+        {/* put both of these into a row and align them to the left */}
+        <SecondaryText content={props.secondary} />
+      </View>
+      <View
+        style={{
+          flex: 3,
         }}
       >
         {props.children}
       </View>
-      {props.action && (
-        <View
-          style={{
-            flex: 1,
-            width: "100%",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 18,
-          }}
-        >
-          {props.action}
-        </View>
-      )}
-    </LinearGradient>
+      <Action action={props.action} />
+    </SafeAreaView>
   );
 };
 

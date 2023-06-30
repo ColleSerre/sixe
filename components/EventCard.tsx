@@ -15,7 +15,6 @@ Then tags and participants are mapped to TagPill and ProfilePicture respectively
 const renderParticipants = (participantsData: Users[]) => {
   // get all profile pics from participants db
   // map them to ProfilePicture component
-
   // renders them by rows of 4
 
   const rows = [];
@@ -43,7 +42,7 @@ const renderParticipants = (participantsData: Users[]) => {
   return rows;
 };
 
-const EventCard = ({ eventData }) => {
+const EventCard = ({ eventData, key }) => {
   const { image, title, description, location, date_time, tags, participants } =
     eventData as Events;
 

@@ -1,289 +1,281 @@
-import { Text, View, Pressable } from "react-native";
-import { useEffect, useRef, useState, createContext } from "react";
-import Welcome from "./welcome";
-import SetSocials from "./setSocials";
-import ProfilePictureSetup from "./pfp";
-import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign, Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
-import Call from "../hooks/useCall";
-import { useRouter } from "expo-router";
-import EventsShowcase from "../components/EventsShowcase";
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from "@gorhom/bottom-sheet";
-import EventCard from "../components/EventCard";
+import { View, Text, SafeAreaView, Pressable } from "react-native";
+import { useUserInfo } from "../components/UserProvider";
 import Users from "../types/users";
-import Events from "../types/events";
+import colours from "../styles/colours";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 
-import { UserInfoProvider, useUserInfo } from "../components/UserProvider";
-
-const UserRouting = () => {
-  const userInfo = useUserInfo();
-  const [route, setRoute] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (userInfo === "loading") return;
-
-    if (userInfo === null) {
-      setRoute("welcome");
-    } else {
-      const user = userInfo as Users;
-      if (!user.profile_picture) {
-        setRoute("pfp");
-      } else if (!user.socials) {
-        setRoute("socials");
-      } else {
-        setRoute("home");
-      }
-    }
-  }, [userInfo]);
-
-  const renderScreen = () => {
-    switch (route) {
-      case "welcome":
-        return <Welcome />;
-      case "pfp":
-        return <ProfilePictureSetup />;
-      case "socials":
-        return <SetSocials />;
-      case "home":
-        return userInfo ? <Home /> : null;
-      case null:
-        return;
-    }
-  };
-
-  return renderScreen();
-};
-
-export default function App() {
-  return (
-    <UserInfoProvider>
-      <UserRouting />
-    </UserInfoProvider>
-  );
-}
-
-const Home = () => {
-  const router = useRef(useRouter()).current;
-  const user = useUserInfo() as Users;
-
-  const launchCall = async () => {
-    const call = new Call(user.socials, user.username, router);
-    const peer = await call.listenForMatch(1);
-
-    if (peer) {
-      call.call(peer);
-      // redirects to call screen on stream
-    }
-  };
-
-  const Panel = () => {
-    const CircleIcon = ({ children, onPress }) => {
-      return (
-        <Pressable onPress={() => onPress}>
-          <View
-            style={{
-              width: 55,
-              height: 55,
-              borderRadius: 30,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#D9D9D9",
-            }}
-          >
-            {children}
-          </View>
-        </Pressable>
-      );
-    };
-
+const RecentCalls = () => {
+  const RecentCallCard = ({ added, username, profilePicture, annecdote }) => {
     return (
       <View
         style={{
-          flex: 2,
-          backgroundColor: "rgba(217, 217, 217, 0.2)",
-          shadowColor: "#000",
-
-          elevation: 3,
-          borderRadius: 30,
+          alignSelf: "center",
+          flexDirection: "row",
+          padding: 8,
+          gap: 10,
+          alignItems: "center",
+          width: "95%",
+          // neo brutalist border
+          backgroundColor: added ? colours.addedGreen : "rgba(0, 0, 0, 0)",
+          borderColor: added ? "rgba(0, 0, 0, 0)" : "black",
+          borderTopWidth: 3,
+          borderLeftWidth: 3,
+          borderRightWidth: 7,
+          borderBottomWidth: 7,
+          borderRadius: 17,
         }}
       >
+        <Image
+          source={profilePicture}
+          cachePolicy="memory-disk"
+          style={{
+            width: 89,
+            height: 89,
+            borderRadius: 15,
+          }}
+        />
         <View
           style={{
             flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-evenly",
+            gap: 10,
           }}
         >
-          <CircleIcon
-            onPress={() => {
-              // TODO: Implement Call history
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
             }}
           >
-            <FontAwesome5 name="history" size={20} color="black" />
-          </CircleIcon>
-          <CircleIcon
-            onPress={() => {
-              // TODO Implement security
+            <Text
+              style={{
+                fontWeight: "700",
+                fontSize: 14,
+              }}
+            >
+              {username}
+            </Text>
+            <View
+              style={{
+                alignSelf: "flex-end",
+                borderRadius: 20,
+                borderColor: "black",
+                borderWidth: 1,
+                width: 35,
+                height: 23,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: added ? 0 : 1,
+              }}
+            >
+              <Entypo name="cross" size={15} color="black" />
+            </View>
+          </View>
+          <Text
+            numberOfLines={3}
+            style={{
+              flex: 1,
+              flexWrap: "wrap",
             }}
           >
-            <Entypo name="shield" size={24} color="#5593CB" />
-          </CircleIcon>
-        </View>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-evenly",
-          }}
-        >
-          <CircleIcon onPress={() => {}}>
-            <AntDesign name="pluscircleo" size={28} color="#3FCCC0" />
-          </CircleIcon>
-          <CircleIcon
-            onPress={() => {
-              // TODO Implement settings
-            }}
-          >
-            <Ionicons name="settings-outline" size={24} color="black" />
-          </CircleIcon>
+            {annecdote}
+          </Text>
         </View>
       </View>
     );
   };
 
-  const StartCall = () => {
-    return (
-      <Pressable
-        onPress={() => console.log("pressed")}
-        style={{
-          flex: 1,
-          backgroundColor: "#3FCCC0",
-          borderRadius: 26,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 20,
-            color: "#fff",
-          }}
-        >
-          Join Call
-        </Text>
-      </Pressable>
-    );
-  };
-
-  const [eventData, setEventData] = useState<Events>();
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = ["60%"];
+  const recentCalls = [
+    {
+      added: false,
+      username: "Mariah Carrey",
+      profilePicture: "https://i.imgur.com/0y8Ftya.png",
+      annecdote:
+        "My most unique party anecdote: I saved my friends from being abducted by a Russian mobster",
+    },
+    {
+      added: false,
+      username: "Mariah Carrey",
+      profilePicture: "https://i.imgur.com/0y8Ftya.png",
+      annecdote:
+        "My most unique party anecdote: I saved my friends from being abducted by a Russian mobster",
+    },
+    {
+      added: false,
+      username: "Mariah Carrey",
+      profilePicture: "https://i.imgur.com/0y8Ftya.png",
+      annecdote:
+        "My most unique party anecdote: I saved my friends from being abducted by a Russian mobster",
+    },
+    {
+      added: true,
+      username: "james",
+      profilePicture: "https://i.imgur.com/0y8Ftya.png",
+      annecdote: "I'm a cool guy",
+    },
+    {
+      added: false,
+      username: "james",
+      profilePicture: "https://i.imgur.com/0y8Ftya.png",
+      annecdote: "I'm a cool guy",
+    },
+  ];
 
   return (
-    <BottomSheetModalProvider>
-      <LinearGradient
-        colors={["#805DE3", "#0095FF"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0, y: 1 }}
+    <View
+      style={{
+        flex: 4,
+        gap: 21,
+      }}
+    >
+      <Text
         style={{
-          flex: 1,
-          alignItems: "flex-start",
-          justifyContent: "flex-start",
-          paddingHorizontal: 20,
-          paddingVertical: 30,
-          paddingTop: 50,
-          gap: 17,
+          fontSize: 23,
+          fontWeight: "700",
+          marginBottom: 15,
         }}
       >
-        {/* Top Row */}
-        <View
-          style={{
-            height: 170,
-            flexDirection: "row",
-            gap: 15,
-          }}
-        >
-          <View
-            style={{
-              flex: 2,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#1e1e1e",
-              shadowColor: "#000",
-
-              elevation: 3,
-              borderRadius: 30,
-              marginRight: 10,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 40,
-                color: "white",
-                fontFamily: "Times New Roman",
-              }}
-            >
-              I
-            </Text>
-          </View>
-          <Panel />
-        </View>
-        {/* Events Panel */}
-        <View
-          style={{
-            flex: 4,
-            flexDirection: "row",
-          }}
-        >
-          <EventsShowcase
-            friends={user.friends}
-            bottomSheetRef={bottomSheetRef}
-            onPress={setEventData}
-          />
-        </View>
-        {/* Start Call Button */}
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-          }}
-        >
-          <Pressable
-            onPress={() => {
-              launchCall();
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: "#33b9b9",
-              opacity: 0.96,
-              borderRadius: 26,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                color: "#fff",
-              }}
-            >
-              Join Call
-            </Text>
-          </Pressable>
-        </View>
-      </LinearGradient>
-      <BottomSheetModal
-        snapPoints={snapPoints}
-        ref={bottomSheetRef}
-        backgroundStyle={{ backgroundColor: "#F4F2E5" }}
+        Recent Calls
+      </Text>
+      <View
+        style={{
+          flex: 1,
+          alignContent: "center",
+          gap: 41,
+        }}
       >
-        <EventCard eventData={eventData} />
-      </BottomSheetModal>
-    </BottomSheetModalProvider>
+        {recentCalls.slice(0, 3).map((call, index) => (
+          <RecentCallCard
+            key={index}
+            added={call.added}
+            username={call.username}
+            profilePicture={call.profilePicture}
+            annecdote={call.annecdote}
+          />
+        ))}
+      </View>
+    </View>
   );
 };
+
+const Home = ({ navigation }) => {
+  let user = useUserInfo();
+
+  const router = useRouter();
+
+  if (user) {
+    const u = user as Users;
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          marginHorizontal: 20,
+          gap: 21,
+        }}
+      >
+        {/* First Row: Welcome + username | vertical bar with account, new features, report */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View>
+            <Text
+              style={{
+                fontSize: 25,
+                fontWeight: "bold",
+                color: "black",
+              }}
+            >
+              Welcome Back
+            </Text>
+            <Text
+              style={{
+                fontSize: 25,
+                fontWeight: "bold",
+                color: colours.chordleMyBallsKraz,
+              }}
+            >
+              {u.username}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: colours.chordleMyBallsKraz,
+              paddingVertical: 15,
+              paddingHorizontal: 13,
+              borderRadius: 15,
+              height: 150,
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Pressable
+              onPress={() => {
+                navigation.navigate("Profile");
+              }}
+            >
+              <MaterialCommunityIcons
+                name="account"
+                size={29}
+                color="rgba(255, 255, 255, 0.3)"
+              />
+            </Pressable>
+            <Text
+              style={{
+                fontSize: 30,
+              }}
+            >
+              ✨
+            </Text>
+            <Ionicons name="flag" size={29} color="red" />
+          </View>
+        </View>
+        <RecentCalls />
+        <Pressable
+          style={{
+            alignSelf: "center",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colours.chordleMyBallsKraz,
+            paddingVertical: 20,
+            paddingHorizontal: 13,
+            height: 70,
+            width: "60%",
+            borderRadius: 300,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 17,
+              fontWeight: "500",
+              color: "white",
+            }}
+          >
+            New Call
+          </Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  } else {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          marginHorizontal: 20,
+        }}
+      >
+        <Text>Not signed in</Text>
+      </SafeAreaView>
+    );
+  }
+};
+
+export default Home;

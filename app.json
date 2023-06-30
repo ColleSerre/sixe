@@ -14,7 +14,15 @@
     "android": {
       "package": "com.acme.app",
       "versionCode": 1,
-      "permissions": ["CAMERA", "RECORD_AUDIO"]
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "38ca343b-bab4-4f76-867a-ea8e204bbe6c"
+      }
     }
   }
 }
