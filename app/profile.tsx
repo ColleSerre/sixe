@@ -1,7 +1,17 @@
-import { FlatList, Pressable, SafeAreaView, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  Text,
+  TextInput,
+  View,
+  ViewStyle,
+} from "react-native";
 import { useUserInfo } from "../components/UserProvider";
+import { FontAwesome } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import colours from "../styles/colours";
+import { useState } from "react";
 
 const ProfilePage = ({ navigation }) => {
   const user = useUserInfo();
@@ -9,23 +19,102 @@ const ProfilePage = ({ navigation }) => {
     return <></>;
   }
 
-  console.log(user.socials);
+  const EditProfilePageValues = {
+    editable: useState(false),
+    socials: {
+      snapchat: useState(user.socials["snapchat"]),
+      instagram: useState(user.socials["instagram"]),
+      linkedin: useState(user.socials["linkedin"]),
+    },
+    anecdote: useState(user.anecdote),
+    username: useState(user.username),
+    profile_picture: useState(user.profile_picture),
+  };
 
-  const Usernames = () => {
-    for (const social in user.socials) {
-      if (user.socials[social] != null) {
-        return (
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
+  const TextInputEditStyle = {
+    borderColor: colours.chordleMyBallsKraz,
+    borderBottomWidth: 2,
+  };
+
+  const TextStyle = {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "black",
+  };
+
+  const Usernames = (socials: Map<string, string>) => {
+    const Icons = {
+      snapchat: <FontAwesome name="snapchat-ghost" size={16} color="#1e1e1e" />,
+      instagram: <FontAwesome name="instagram" size={24} color="black" />,
+      linkedin: (
+        <FontAwesome
+          name="linkedin"
+          size={16}
+          color={EditProfilePageValues.editable[0] ? "black" : "white"}
+        />
+      ),
+    };
+
+    const PillStyle = {
+      borderRadius: 30,
+      padding: 12,
+      fontSize: 16,
+      fontWeight: "600",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    };
+
+    const SnapchatPillStyle = {
+      backgroundColor: "#FFFC00",
+    };
+
+    const InstagramPillStyle = {
+      backgroundColor: "#E1306C",
+    };
+
+    const LinkedinPillStyle = {
+      backgroundColor: "#0A66C2",
+    };
+
+    const displayed: JSX.Element[] = [];
+
+    for (const social in socials) {
+      if (socials[social].length > 0) {
+        displayed.push(
+          <View
+            key={social}
+            style={[
+              PillStyle as ViewStyle,
+              social == "instagram"
+                ? InstagramPillStyle
+                : social == "snapchat"
+                ? SnapchatPillStyle
+                : LinkedinPillStyle,
+              EditProfilePageValues.editable[0]
+                ? {
+                    backgroundColor: "white",
+                  }
+                : {},
+            ]}
           >
-            {user.socials[social]}
-          </Text>
+            {Icons[social]}
+            <TextInput
+              editable={EditProfilePageValues.editable[0]}
+              onChangeText={(text) => socials[social][1](text)}
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "black",
+              }}
+            >
+              {socials[social]}
+            </TextInput>
+          </View>
         );
       }
     }
+    return displayed;
   };
 
   return (
@@ -50,47 +139,90 @@ const ProfilePage = ({ navigation }) => {
           }}
           source={user.profile_picture}
         />
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: "bold",
-            color: "black",
-          }}
+        <TextInput
+          editable={EditProfilePageValues.editable[0]}
+          style={
+            EditProfilePageValues.editable[0]
+              ? { ...TextInputEditStyle, ...TextStyle }
+              : { ...TextStyle }
+          }
+          onChangeText={(text) => EditProfilePageValues.username[1](text)}
         >
           {user.username}
-        </Text>
-        <Usernames />
+        </TextInput>
+        {Usernames(user.socials)}
       </View>
       <View
         style={{
           height: "35%",
           width: "80%",
-          backgroundColor: colours.chordleMyBallsKraz,
-          padding: 25,
+          paddingVertical: 40,
+          paddingHorizontal: 30,
           borderRadius: 20,
+          borderWidth: EditProfilePageValues.editable[0] ? 3 : 0,
+          borderColor: colours.chordleMyBallsKraz,
+          backgroundColor: EditProfilePageValues.editable[0]
+            ? "white"
+            : colours.chordleMyBallsKraz,
         }}
       >
-        <Text
-          style={{
-            color: "white",
-            fontSize: 16,
-            fontWeight: "600",
-            flex: 1,
-          }}
-        >
-          {"Tell a story about yourself"}
-        </Text>
-        <Text
-          style={{
-            color: "white",
-            fontSize: 16,
-            flex: 2,
-          }}
-        >
-          {
-            "personal example: Since moving to London, I've met both Jesus and Lucifer (or people who swore they were at least)"
-          }
-        </Text>
+        {!user.anecdote &&
+        EditProfilePageValues.editable[0] === false &&
+        EditProfilePageValues.anecdote[0] === user.anecdote ? (
+          <>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 16,
+                fontWeight: "600",
+                flex: 1,
+              }}
+            >
+              {"Tell a story about yourself"}
+            </Text>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 16,
+                flex: 2,
+              }}
+            >
+              {
+                "personal example: Since moving to London, I've met both Jesus and Lucifer (or people who swore they were at least)"
+              }
+            </Text>
+          </>
+        ) : user.anecdote?.length > 0 ||
+          EditProfilePageValues.anecdote[0] !== user.anecdote ? (
+          <TextInput
+            editable={EditProfilePageValues.editable[0]}
+            multiline={true}
+            style={{
+              color: EditProfilePageValues.editable[0]
+                ? colours.chordleMyBallsKraz
+                : "white",
+              fontSize: 20,
+              fontWeight: "700",
+            }}
+            onChangeText={(text) => {
+              EditProfilePageValues.anecdote[1](text);
+            }}
+          >
+            {EditProfilePageValues.anecdote[0]}
+          </TextInput>
+        ) : (
+          <TextInput
+            placeholder="Tell us something about yourself..."
+            style={{
+              color: colours.chordleMyBallsKraz,
+              fontSize: 20,
+              fontWeight: "700",
+            }}
+            onChangeText={(text) => {
+              EditProfilePageValues.anecdote[1](text);
+            }}
+          />
+        )}
       </View>
       <Pressable
         style={{
@@ -101,13 +233,16 @@ const ProfilePage = ({ navigation }) => {
           justifyContent: "center",
           borderRadius: 30,
         }}
+        onPress={() =>
+          EditProfilePageValues.editable[1](!EditProfilePageValues.editable[0])
+        }
       >
         <Text
           style={{
             color: "white",
           }}
         >
-          Edit
+          {EditProfilePageValues.editable[0] ? "Done" : "Edit"}
         </Text>
       </Pressable>
     </SafeAreaView>

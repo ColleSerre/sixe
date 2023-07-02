@@ -3,6 +3,7 @@ import Friend from "./friend";
 import Participation from "./participation";
 
 type Users = {
+  anecdote: any;
   annecdote: any;
   uid: string;
   username: string | null;

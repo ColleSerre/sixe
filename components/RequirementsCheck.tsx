@@ -18,7 +18,7 @@ const RequirementsCheck = ({ children }) => {
       return <SetProfilePicture />;
     }
 
-    if (u.socials === null || u.socials === undefined) {
+    if (u.socials === null) {
       return <SetSocials />;
     }
     return children;

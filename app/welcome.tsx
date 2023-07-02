@@ -77,11 +77,6 @@ const Welcome = () => {
       const payload: Users = {
         created_at: new Date(),
         username: username,
-        socials: {
-          instagram: "",
-          snapchat: "",
-          linkedin: "",
-        },
         email_verified: true,
         email: emailAddress,
 
@@ -90,6 +85,8 @@ const Welcome = () => {
         friends: [],
         created_events: [],
         participations: [],
+        anecdote: undefined,
+        socials: undefined
       };
 
       const { data, error } = await supabase.from("users").insert([payload]);
