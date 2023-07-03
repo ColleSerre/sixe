@@ -9,10 +9,29 @@ const UserInfoContext = createContext<Users | null | "loading">(null);
 // Create a provider component to wrap the consuming components
 export const UserInfoProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState<Users | null | "loading">("loading");
+  const [updateTrigger, setUpdateTrigger] = useState(false); // New update trigger state
   const user = useUser();
 
+  // Function to handle Supabase updates
+  const handleSupabaseUpdate = () => {
+    setUpdateTrigger((prevTrigger) => !prevTrigger); // Invert the update trigger value
+  };
+
+  const usersChanges = supabase.channel("any").on(
+    "postgres_changes",
+    {
+      event: "UPDATE",
+      schema: "public",
+      table: "users",
+      filter: "uid=eq." + user?.user?.id,
+    },
+    (payload) => {
+      handleSupabaseUpdate();
+    }
+  );
+
   useEffect(() => {
-    const getUserInfo = async () => {
+    const fetchUserInfo = async () => {
       try {
         const { data, error } = await supabase
           .from("users")
@@ -36,9 +55,17 @@ export const UserInfoProvider = ({ children }) => {
     };
 
     if (user?.user?.id) {
-      getUserInfo();
+      fetchUserInfo();
+
+      // Listen for changes in the users table using Supabase Realtime
+      usersChanges.subscribe();
     }
-  }, [user.user]);
+
+    return () => {
+      // Unsubscribe from the realtime listener when the component is unmounted
+      usersChanges.unsubscribe();
+    };
+  }, [updateTrigger]); // Include the updateTrigger in the dependency array
 
   return (
     <UserInfoContext.Provider value={userInfo}>

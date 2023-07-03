@@ -11,10 +11,14 @@ import { useUserInfo } from "../components/UserProvider";
 import { FontAwesome } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import colours from "../styles/colours";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import supabase from "../hooks/initSupabase";
+import { useUser } from "@clerk/clerk-expo";
 
 const ProfilePage = ({ navigation }) => {
   const user = useUserInfo();
+  const uid = useUser().user.id;
+
   if (user == "loading" || user == null) {
     return <></>;
   }
@@ -44,13 +48,13 @@ const ProfilePage = ({ navigation }) => {
 
   const Usernames = (socials: Map<string, string>) => {
     const Icons = {
-      snapchat: <FontAwesome name="snapchat-ghost" size={16} color="#1e1e1e" />,
+      snapchat: <FontAwesome name="snapchat-ghost" size={16} color="yellow" />,
       instagram: <FontAwesome name="instagram" size={24} color="black" />,
       linkedin: (
         <FontAwesome
           name="linkedin"
           size={16}
-          color={EditProfilePageValues.editable[0] ? "black" : "white"}
+          color={EditProfilePageValues.editable[0] ? "black" : "blue"}
         />
       ),
     };
@@ -63,18 +67,7 @@ const ProfilePage = ({ navigation }) => {
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
-    };
-
-    const SnapchatPillStyle = {
-      backgroundColor: "#FFFC00",
-    };
-
-    const InstagramPillStyle = {
-      backgroundColor: "#E1306C",
-    };
-
-    const LinkedinPillStyle = {
-      backgroundColor: "#0A66C2",
+      backgroundColor: "white",
     };
 
     const displayed: JSX.Element[] = [];
@@ -82,26 +75,13 @@ const ProfilePage = ({ navigation }) => {
     for (const social in socials) {
       if (socials[social].length > 0) {
         displayed.push(
-          <View
-            key={social}
-            style={[
-              PillStyle as ViewStyle,
-              social == "instagram"
-                ? InstagramPillStyle
-                : social == "snapchat"
-                ? SnapchatPillStyle
-                : LinkedinPillStyle,
-              EditProfilePageValues.editable[0]
-                ? {
-                    backgroundColor: "white",
-                  }
-                : {},
-            ]}
-          >
+          <View key={social} style={PillStyle as ViewStyle}>
             {Icons[social]}
             <TextInput
               editable={EditProfilePageValues.editable[0]}
-              onChangeText={(text) => socials[social][1](text)}
+              onChangeText={(text) =>
+                EditProfilePageValues.socials[social][1](text)
+              }
               style={{
                 fontSize: 16,
                 fontWeight: "600",
@@ -143,8 +123,8 @@ const ProfilePage = ({ navigation }) => {
           editable={EditProfilePageValues.editable[0]}
           style={
             EditProfilePageValues.editable[0]
-              ? { ...TextInputEditStyle, ...TextStyle }
-              : { ...TextStyle }
+              ? ({ ...TextInputEditStyle, ...TextStyle } as ViewStyle)
+              : ({ ...TextStyle } as ViewStyle)
           }
           onChangeText={(text) => EditProfilePageValues.username[1](text)}
         >
@@ -166,9 +146,8 @@ const ProfilePage = ({ navigation }) => {
             : colours.chordleMyBallsKraz,
         }}
       >
-        {!user.anecdote &&
-        EditProfilePageValues.editable[0] === false &&
-        EditProfilePageValues.anecdote[0] === user.anecdote ? (
+        {(!user.anecdote && EditProfilePageValues.editable[0] === false) ||
+        EditProfilePageValues.anecdote[0] === "" ? (
           <>
             <Text
               style={{
@@ -240,6 +219,30 @@ const ProfilePage = ({ navigation }) => {
         <Text
           style={{
             color: "white",
+          }}
+          onPress={async () => {
+            if (EditProfilePageValues.editable[0]) {
+              // update user
+              const { data, error } = await supabase
+                .from("users")
+                .update({
+                  username: EditProfilePageValues.username[0],
+                  socials: {
+                    snapchat: EditProfilePageValues.socials["snapchat"][0],
+                    instagram: EditProfilePageValues.socials["instagram"][0],
+                    linkedin: EditProfilePageValues.socials["linkedin"][0],
+                  },
+                  anecdote: EditProfilePageValues.anecdote[0],
+                })
+                .eq("uid", uid);
+              if (error) {
+                console.error(error);
+              } else {
+                EditProfilePageValues.editable[1](false);
+              }
+            } else {
+              EditProfilePageValues.editable[1](true);
+            }
           }}
         >
           {EditProfilePageValues.editable[0] ? "Done" : "Edit"}
