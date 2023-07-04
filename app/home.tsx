@@ -6,9 +6,226 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useState } from "react";
 
-const RecentCalls = () => {
+const RecentCalls = ({ recent_calls, navigation }) => {
+  const IntroSlideShow = () => {
+    const [active, setActive] = useState(0);
+
+    const Content = ({ text1, text2, subheading }) => {
+      return (
+        <View
+          style={{
+            paddingHorizontal: 20,
+            justifyContent: "space-between",
+            flex: 1,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              marginBottom: 20,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "500",
+              }}
+            >
+              {text1}
+            </Text>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "700",
+                color: colours.chordleMyBallsKraz,
+              }}
+            >
+              {text2}
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontSize: 13,
+              fontWeight: "400",
+              textAlign: "center",
+            }}
+          >
+            {subheading}
+          </Text>
+        </View>
+      );
+    };
+
+    const parts = [
+      {
+        title: "Let's get started !",
+        content: (
+          <Content
+            text1={"Looking for something specific ?"}
+            text2={"Customise your search with categories."}
+            subheading={
+              "(feel free to suggest new filters and we'll implement them)"
+            }
+          />
+        ),
+      },
+      {
+        title: "During your call",
+        content: (
+          <Content
+            text1={"You can leave whenever you want to, no questions asked."}
+            text2={"Share your socials if you want to keep in touch."}
+            subheading={"(keep it vibey and don't be a creep)"}
+          />
+        ),
+      },
+      {
+        title: "After your call",
+        content: (
+          <Content
+            text1={"You'll find your recent calls here."}
+            text2={"Now let's get started."}
+            subheading={"(daren.palmer.22@ucl.ac.uk for suggestions)"}
+          />
+        ),
+      },
+    ];
+
+    return (
+      <View
+        style={{
+          flex: 1,
+          borderColor: "black",
+          borderWidth: 3,
+          borderRadius: 20,
+          gap: 10,
+        }}
+      >
+        {/* Three pills to indicate progress in the tutorial */}
+        <View
+          style={{
+            margin: 20,
+            flexDirection: "row",
+            gap: 10,
+          }}
+        >
+          {parts.map((part, index) => {
+            return (
+              <Pressable
+                key={index}
+                style={{
+                  flex: 1,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: active == index ? "black" : "grey",
+                }}
+                onPress={() => {
+                  setActive(index);
+                }}
+              />
+            );
+          })}
+        </View>
+        <Text
+          style={{
+            fontSize: 23,
+            fontWeight: "700",
+            marginBottom: 15,
+            marginHorizontal: 20,
+          }}
+        >
+          {parts[active].title}
+        </Text>
+        <View
+          style={{
+            flex: 2,
+          }}
+        >
+          {parts[active].content}
+        </View>
+
+        {active < parts.length - 1 ? (
+          <View
+            style={{
+              margin: 20,
+              flexDirection: "row",
+              borderColor: "black",
+              borderWidth: 1,
+              borderRadius: 20,
+              height: 50,
+            }}
+          >
+            <Pressable
+              onPress={() => {
+                if (active > 0) {
+                  setActive(active - 1);
+                }
+              }}
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRightColor: "black",
+                borderRightWidth: 1,
+              }}
+            >
+              <Entypo name="chevron-left" size={24} color="black" />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                if (active < parts.length - 1) {
+                  setActive(active + 1);
+                }
+              }}
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Entypo name="chevron-right" size={24} color="black" />
+            </Pressable>
+          </View>
+        ) : (
+          <View
+            style={{
+              margin: 20,
+              borderRadius: 20,
+              height: 50,
+            }}
+          >
+            <Pressable
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: colours.chordleMyBallsKraz,
+                borderRadius: 20,
+                height: 50,
+              }}
+              onPress={() => {
+                navigation.navigate("WaitingCall");
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 17,
+                  fontWeight: "400",
+                  color: "white",
+                }}
+              >
+                Start your first call
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   const RecentCallCard = ({ added, username, profilePicture, annecdote }) => {
     return (
       <View
@@ -89,42 +306,6 @@ const RecentCalls = () => {
     );
   };
 
-  const recentCalls = [
-    {
-      added: false,
-      username: "Mariah Carrey",
-      profilePicture: "https://i.imgur.com/0y8Ftya.png",
-      annecdote:
-        "My most unique party anecdote: I saved my friends from being abducted by a Russian mobster",
-    },
-    {
-      added: false,
-      username: "Mariah Carrey",
-      profilePicture: "https://i.imgur.com/0y8Ftya.png",
-      annecdote:
-        "My most unique party anecdote: I saved my friends from being abducted by a Russian mobster",
-    },
-    {
-      added: false,
-      username: "Mariah Carrey",
-      profilePicture: "https://i.imgur.com/0y8Ftya.png",
-      annecdote:
-        "My most unique party anecdote: I saved my friends from being abducted by a Russian mobster",
-    },
-    {
-      added: true,
-      username: "james",
-      profilePicture: "https://i.imgur.com/0y8Ftya.png",
-      annecdote: "I'm a cool guy",
-    },
-    {
-      added: false,
-      username: "james",
-      profilePicture: "https://i.imgur.com/0y8Ftya.png",
-      annecdote: "I'm a cool guy",
-    },
-  ];
-
   return (
     <View
       style={{
@@ -132,31 +313,40 @@ const RecentCalls = () => {
         gap: 21,
       }}
     >
-      <Text
-        style={{
-          fontSize: 23,
-          fontWeight: "700",
-          marginBottom: 15,
-        }}
-      >
-        Recent Calls
-      </Text>
+      {recent_calls?.length > 0 ? (
+        <Text
+          style={{
+            fontSize: 23,
+            fontWeight: "700",
+            marginBottom: 15,
+          }}
+        >
+          Recent calls
+        </Text>
+      ) : null}
       <View
         style={{
           flex: 1,
           alignContent: "center",
+          justifyContent: "center",
           gap: 41,
         }}
       >
-        {recentCalls.slice(0, 3).map((call, index) => (
-          <RecentCallCard
-            key={index}
-            added={call.added}
-            username={call.username}
-            profilePicture={call.profilePicture}
-            annecdote={call.annecdote}
-          />
-        ))}
+        {recent_calls == null ? (
+          <IntroSlideShow />
+        ) : (
+          recent_calls
+            .slice(0, 3)
+            .map((call, index) => (
+              <RecentCallCard
+                key={index}
+                added={call.added}
+                username={call.username}
+                profilePicture={call.profilePicture}
+                annecdote={call.annecdote}
+              />
+            ))
+        )}
       </View>
     </View>
   );
@@ -164,8 +354,6 @@ const RecentCalls = () => {
 
 const Home = ({ navigation }) => {
   let user = useUserInfo();
-
-  const router = useRouter();
 
   if (user) {
     const u = user as Users;
@@ -238,30 +426,38 @@ const Home = ({ navigation }) => {
             <Ionicons name="flag" size={29} color="red" />
           </View>
         </View>
-        <RecentCalls />
-        <Pressable
-          style={{
-            alignSelf: "center",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: colours.chordleMyBallsKraz,
-            paddingVertical: 20,
-            paddingHorizontal: 13,
-            height: 70,
-            width: "60%",
-            borderRadius: 300,
-          }}
-        >
-          <Text
+        <RecentCalls recent_calls={u.recent_calls} navigation={navigation} />
+
+        {u.recent_calls == null ? (
+          <View />
+        ) : (
+          <Pressable
             style={{
-              fontSize: 17,
-              fontWeight: "500",
-              color: "white",
+              alignSelf: "center",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: colours.chordleMyBallsKraz,
+              paddingVertical: 20,
+              paddingHorizontal: 13,
+              height: 70,
+              width: "60%",
+              borderRadius: 300,
+            }}
+            onPress={() => {
+              navigation.navigate("WaitingCall");
             }}
           >
-            New Call
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: "500",
+                color: "white",
+              }}
+            >
+              New Call
+            </Text>
+          </Pressable>
+        )}
       </SafeAreaView>
     );
   } else {

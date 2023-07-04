@@ -11,6 +11,8 @@ import SetProfilePicture from "./SetProfilePicture";
 import { useEffect } from "react";
 import RequirementsCheck from "../components/RequirementsCheck";
 import ProfilePage from "./profile";
+import EndOfCall from "./EndOfCall";
+import WaitingCall from "./WaitingCall";
 
 const App = () => {
   const tokenCache = {
@@ -46,6 +48,8 @@ const App = () => {
           <RequirementsCheck>
             <Stack.Navigator screenOptions={navigatorOptions}>
               <Stack.Screen name="Home" component={Home} />
+              <Stack.Screen name="WaitingCall" component={WaitingCall} />
+              <Stack.Screen name="EndOfCall" component={EndOfCall} />
               <Stack.Screen name="Profile" component={ProfilePage} />
             </Stack.Navigator>
           </RequirementsCheck>
