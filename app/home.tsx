@@ -7,8 +7,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useState } from "react";
+import { Camera } from "expo-camera";
 
 const RecentCalls = ({ recent_calls, navigation }) => {
+  const [permission, requestPermission] = Camera.useCameraPermissions();
+  const [permission2, requestPermission2] = Camera.useMicrophonePermissions();
+
   const IntroSlideShow = () => {
     const [active, setActive] = useState(0);
 
@@ -128,6 +132,10 @@ const RecentCalls = ({ recent_calls, navigation }) => {
               />
             );
           })}
+
+          {/* Gesture handler gets the x coordinate of where it was tapped and if it's on the right it active + 1s it */}
+
+          {/* The content of the tutorial */}
         </View>
         <Text
           style={{
@@ -158,6 +166,7 @@ const RecentCalls = ({ recent_calls, navigation }) => {
               height: 50,
             }}
           >
+            {/* Hide left arrow if active is 0 */}
             <Pressable
               onPress={() => {
                 if (active > 0) {
@@ -206,8 +215,15 @@ const RecentCalls = ({ recent_calls, navigation }) => {
                 borderRadius: 20,
                 height: 50,
               }}
-              onPress={() => {
-                navigation.navigate("WaitingCall");
+              onPress={async () => {
+                if (permission.granted && permission2.granted) {
+                  navigation.navigate("WaitingCall", {
+                    category: "all",
+                  });
+                } else {
+                  if (!permission.granted) requestPermission();
+                  if (!permission2.granted) requestPermission2();
+                }
               }}
             >
               <Text

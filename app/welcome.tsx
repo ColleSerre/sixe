@@ -82,11 +82,9 @@ const Welcome = () => {
 
         profile_picture: "",
         uid: completeSignUp.createdUserId,
-        friends: [],
-        created_events: [],
-        participations: [],
         anecdote: undefined,
-        socials: undefined
+        socials: undefined,
+        recent_calls: []
       };
 
       const { data, error } = await supabase.from("users").insert([payload]);
