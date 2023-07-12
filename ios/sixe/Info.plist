@@ -51,6 +51,8 @@
     <string>This app uses the camera to conduct video calls.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>This app uses the microphone to conduct video calls.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your photos</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

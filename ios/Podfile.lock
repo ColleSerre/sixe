@@ -17,7 +17,7 @@ PODS:
   - EXJSONUtils (0.5.1)
   - EXManifests (0.5.2):
     - EXJSONUtils
-  - Expo (48.0.19):
+  - Expo (48.0.20):
     - ExpoModulesCore
   - expo-dev-client (2.2.1):
     - EXManifests
@@ -109,7 +109,7 @@ PODS:
     - React-Core
     - React-RCTAppDelegate
     - ReactCommon/turbomodule/core
-  - ExpoRandom (13.1.1):
+  - ExpoRandom (13.1.2):
     - ExpoModulesCore
   - ExpoWebBrowser (12.1.1):
     - ExpoModulesCore
@@ -118,7 +118,7 @@ PODS:
   - EXSplashScreen (0.18.2):
     - ExpoModulesCore
     - React-Core
-  - EXUpdatesInterface (0.9.1)
+  - EXUpdatesInterface (0.9.3)
   - FBLazyVector (0.71.8)
   - FBReactNativeSpec (0.71.8):
     - RCT-Folly (= 2021.07.22.00)
@@ -779,7 +779,7 @@ SPEC CHECKSUMS:
   EXImageLoader: fd053169a8ee932dd83bf1fe5487a50c26d27c2b
   EXJSONUtils: 48b1e764ac35160e6f54d21ab60d7d9501f3e473
   EXManifests: 500666d48e8dd7ca5a482c9e729e4a7a6c34081b
-  Expo: 8448e3a2aa1b295f029c81551e1ab6d986517fdb
+  Expo: b7d2843b0a0027d0ce76121a63085764355a16ed
   expo-dev-client: 92b9e487ad6a05a3ad1dda70334729ccaf622bfe
   expo-dev-launcher: 5275974e9f825f70a33bb79301a8ab894179fa94
   expo-dev-menu: f2ea9233cdd8790c20d559eba7352bbf83662d6a
@@ -790,11 +790,11 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: 69f5f627670d62318410392d03e0b5db0f85759a
   ExpoLinearGradient: 8eaab76b7f55c612ed8348c8be8c2a18a9b4529f
   ExpoModulesCore: 653958063a301098b541ae4dfed1ac0b98db607b
-  ExpoRandom: 7ee07d62e7003b74d0536e0495e3a653fe1b2a74
+  ExpoRandom: 2b8cb73f02f534b083a1f79b10b89ca0f0111b55
   ExpoWebBrowser: 033d34c478d9986da2f1679729041423837626e0
   EXSecureStore: e8923258361cc406d0401af380f12bd05b2b720f
   EXSplashScreen: 0e0a9ba0cf7553094e93213099bd7b42e6e237e9
-  EXUpdatesInterface: dd699d1930e28639dcbd70a402caea98e86364ca
+  EXUpdatesInterface: e86394c0770f14eb96386cbb32be83fa6a97e8f9
   FBLazyVector: f637f31eacba90d4fdeff3fa41608b8f361c173b
   FBReactNativeSpec: 0d9a4f4de7ab614c49e98c00aedfd3bfbda33d59
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9

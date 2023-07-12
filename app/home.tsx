@@ -397,7 +397,7 @@ const Home = ({ navigation }) => {
                 color: "black",
               }}
             >
-              Welcome Back
+              Welcome back
             </Text>
             <Text
               style={{

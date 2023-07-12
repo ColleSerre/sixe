@@ -8,6 +8,7 @@ import { Snackbar } from "react-native-paper";
 import Users from "../types/users";
 import supabase from "../hooks/initSupabase";
 import colours from "../styles/colours";
+import { Keyboard } from "react-native";
 import textInputStyles from "../styles/TextInput";
 
 const Welcome = () => {
@@ -51,7 +52,11 @@ const Welcome = () => {
           if (err.errors[0].code === "form_identifier_exists") {
             setLogin(true);
             onLogin();
+          } else if (err.errors[0].code === "session_exists") {
+            setLogin(true);
+            onLogin();
           } else {
+            console.log(err.errors[0].code);
             setSnackbarContent(err.errors[0].message);
           }
         }
@@ -84,7 +89,7 @@ const Welcome = () => {
         uid: completeSignUp.createdUserId,
         anecdote: undefined,
         socials: undefined,
-        recent_calls: []
+        recent_calls: [],
       };
 
       const { data, error } = await supabase.from("users").insert([payload]);
@@ -98,7 +103,7 @@ const Welcome = () => {
         setSnackbarContent(error.message);
       }
     } catch (err: any) {
-      console.log(err);
+      console.log(err.errors[0].message);
     }
   };
 
@@ -213,7 +218,13 @@ const Welcome = () => {
             value={code}
             placeholder="Code..."
             keyboardType="number-pad"
-            onChangeText={(code) => setCode(code)}
+            onChangeText={(code) => {
+              setCode(code);
+              if (code.length === 6) {
+                // hide the keyboard.
+                Keyboard.dismiss();
+              }
+            }}
             style={{
               padding: 20,
               backgroundColor: "#F4F2E5",

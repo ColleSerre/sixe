@@ -3,22 +3,16 @@
     "version": ">= 3.14.0"
   },
   "build": {
-    "development-phone": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "gradleCommand": ":app:assembleDebug"
-      },
-      "ios": {
-        "buildConfiguration": "Debug"
-      }
-    },
     "development-simulator": {
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
         "simulator": true
       }
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal"

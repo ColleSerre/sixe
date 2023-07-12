@@ -13,6 +13,7 @@ import RequirementsCheck from "../components/RequirementsCheck";
 import ProfilePage from "./profile";
 import EndOfCall from "./EndOfCall";
 import WaitingCall from "./WaitingCall";
+import AdminPage from "./admin";
 
 const App = () => {
   const tokenCache = {
@@ -47,6 +48,7 @@ const App = () => {
         <UserInfoProvider>
           <RequirementsCheck>
             <Stack.Navigator screenOptions={navigatorOptions}>
+              <Stack.Screen name="Admin" component={AdminPage} />
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="WaitingCall" component={WaitingCall} />
               <Stack.Screen name="EndOfCall" component={EndOfCall} />
