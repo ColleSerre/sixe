@@ -37,6 +37,7 @@ const Welcome = () => {
 
         try {
           await signUp.create({
+            username,
             emailAddress,
             password,
           });

@@ -105,20 +105,34 @@ class VoIP {
     }
   };
 
-  sendOffer = (offer) => {
+  sendOffer = (offer, tag: string | undefined = undefined) => {
     if (this.peerConnection.localDescription == null && offer == null) {
       return;
     } else {
-      this.socket.emit(
-        "enter_matchmaking",
-        {
-          id: this.id, // me
-          offerDescription: this.peerConnection.localDescription ?? offer,
-        },
-        (response) => {
-          console.log(response);
-        }
-      );
+      if (tag === "renegotiate" && this.remoteID) {
+        this.socket.emit(
+          "renegotiating_offer",
+          {
+            id: this.id, // me
+            remoteID: this.remoteID, // them
+            offerDescription: this.peerConnection.localDescription ?? offer,
+          },
+          (response) => {
+            console.log(response);
+          }
+        );
+      } else {
+        this.socket.emit(
+          "enter_matchmaking",
+          {
+            id: this.id, // me
+            offerDescription: this.peerConnection.localDescription ?? offer,
+          },
+          (response) => {
+            console.log(response);
+          }
+        );
+      }
     }
   };
 

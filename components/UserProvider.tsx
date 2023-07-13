@@ -2,6 +2,7 @@ import { useUser } from "@clerk/clerk-expo";
 import supabase from "../hooks/initSupabase";
 import Users from "../types/users";
 import { createContext, useState, useEffect, useContext } from "react";
+import RequirementsCheck from "./RequirementsCheck";
 
 // Create the context
 const UserInfoContext = createContext<Users | null | "loading">(null);
@@ -24,6 +25,22 @@ export const UserInfoProvider = ({ children }) => {
       schema: "public",
       table: "users",
       filter: "uid=eq." + user?.user?.id,
+    },
+    (payload) => {
+      console.log("User info updated");
+      handleSupabaseUpdate();
+    }
+  );
+
+  const event = { event: "INSERT", schema: "public", table: "users" };
+
+  const usersInserts = supabase.channel("any").on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "users",
+      filter: user?.user?.id ? "uid=eq." + user?.user?.id : "",
     },
     (payload) => {
       handleSupabaseUpdate();
@@ -59,17 +76,19 @@ export const UserInfoProvider = ({ children }) => {
 
       // Listen for changes in the users table using Supabase Realtime
       usersChanges.subscribe();
+      usersInserts.subscribe();
     }
 
     return () => {
       // Unsubscribe from the realtime listener when the component is unmounted
       usersChanges.unsubscribe();
+      usersInserts.unsubscribe();
     };
   }, [updateTrigger]); // Include the updateTrigger in the dependency array
 
   return (
     <UserInfoContext.Provider value={userInfo}>
-      {children}
+      <RequirementsCheck>{children}</RequirementsCheck>
     </UserInfoContext.Provider>
   );
 };

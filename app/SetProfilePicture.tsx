@@ -1,21 +1,33 @@
 import InfoPage from "../components/InfoPage";
 import { Pressable, View, Text } from "react-native";
-import { Camera, CameraType } from "expo-camera";
+import {
+  Camera,
+  CameraCapturedPicture,
+  CameraType,
+  ImageType,
+} from "expo-camera";
 import { useRef, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
 import supabase from "../hooks/initSupabase";
+import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import colours from "../styles/colours";
 
-// import expo image
+import { decode } from "base64-arraybuffer";
+import { useUserInfo } from "../components/UserProvider";
+import Users from "../types/users";
+import { Snackbar } from "react-native-paper";
 
 const SetProfilePicture = () => {
   const userID = useUser().user.id;
   let cameraRef = useRef<Camera>(null);
+  const [loading, setLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [type, setType] = useState(CameraType.front);
-  const [uri, setUri] = useState<string | undefined>(undefined);
+  const [photo, setPhoto] = useState<CameraCapturedPicture | undefined>(
+    undefined
+  );
   return (
     <InfoPage
       header={"Now,"}
@@ -40,33 +52,49 @@ const SetProfilePicture = () => {
               justifyContent: "center",
             }}
             onPress={async () => {
-              if (!uri && !hasPermission) {
+              if (!photo && !hasPermission) {
                 const c = await Camera.requestCameraPermissionsAsync();
                 const m = await Camera.requestMicrophonePermissionsAsync();
                 setHasPermission(
                   c.status === "granted" && m.status === "granted"
                 );
               }
-              if (!uri && hasPermission) {
-                const photo = await cameraRef.current?.takePictureAsync();
-                console.log(photo);
-                setUri(photo?.uri ?? undefined);
-              } else if (uri) {
-                const path = `profile_pictures/" + ${userID}.jpg`;
-                supabase.storage
-                  .from("profile_pictures")
-                  .upload(path, uri)
-                  .then(({ data, error }) => {
-                    console.log(data, error);
-                  });
+              if (!photo && hasPermission) {
+                setPhoto(
+                  await cameraRef.current?.takePictureAsync({
+                    base64: true,
+                  })
+                );
+              } else if (photo) {
+                setLoading(true);
+                const path = `${userID}.jpg`;
 
-                // update user profile picture path in the user row
+                if (type === CameraType.front) {
+                  const manipResult = await manipulateAsync(
+                    photo.uri,
+                    [{ flip: FlipType.Horizontal }],
+                    { format: SaveFormat.JPEG, base64: true }
+                  );
 
-                const { data, error } = await supabase
-                  .from("users")
-                  .update({ profile_picture: path })
-                  .eq("uid", userID);
-                console.log(data, error);
+                  const { error } = await supabase.storage
+                    .from("profile_pictures")
+                    .upload(`public/${path}`, decode(manipResult.base64), {
+                      upsert: true,
+                    });
+
+                  // update user profile picture path in the user row
+                  if (!error) {
+                    await supabase
+                      .from("users")
+                      .update({
+                        profile_picture: {
+                          path: `public/${path}`,
+                          type: type,
+                        },
+                      })
+                      .eq("uid", userID);
+                  }
+                }
               }
             }}
           >
@@ -77,7 +105,7 @@ const SetProfilePicture = () => {
                 fontWeight: "600",
               }}
             >
-              {!uri ? "Take Picture" : "Submit"}
+              {!photo ? "Take Picture" : "Submit"}
             </Text>
           </Pressable>
           <Pressable
@@ -100,6 +128,18 @@ const SetProfilePicture = () => {
               Browse photos
             </Text>
           </Pressable>
+          <Snackbar
+            visible={loading}
+            onDismiss={() => setLoading(false)}
+            action={{
+              label: "Dismiss",
+              onPress: () => {
+                setLoading(false);
+              },
+            }}
+          >
+            {loading ? "Uploading..." : "Uploaded!"}
+          </Snackbar>
         </View>
       }
     >
@@ -112,7 +152,7 @@ const SetProfilePicture = () => {
           justifyContent: "center",
         }}
       >
-        {hasPermission && !uri ? (
+        {hasPermission && !photo ? (
           <View
             style={{
               flex: 1,
@@ -143,17 +183,39 @@ const SetProfilePicture = () => {
               <Ionicons name="ios-camera-reverse" size={24} color="black" />
             </Pressable>
           </View>
-        ) : uri ? (
-          <Image
-            source={{ uri: uri }}
-            style={{
-              width: 269,
-              height: 269,
-              backgroundColor: "#D9D9D9",
-              borderRadius: 10,
-              marginBottom: 20,
-            }}
-          />
+        ) : photo ? (
+          <>
+            <Image
+              source={{ uri: photo.uri }}
+              style={{
+                width: 269,
+                height: 269,
+                backgroundColor: "#D9D9D9",
+                borderRadius: 10,
+                marginBottom: 20,
+                transform: [{ scaleX: type === CameraType.front ? -1 : 1 }],
+              }}
+            />
+            <Pressable
+              onPress={() => {
+                setPhoto(undefined);
+              }}
+              style={{
+                backgroundColor: "rgba(0,0,0,0.5)",
+                borderRadius: 25,
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: "white",
+                }}
+              >
+                Retake
+              </Text>
+            </Pressable>
+          </>
         ) : (
           <View
             style={{

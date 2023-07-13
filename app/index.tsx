@@ -9,7 +9,6 @@ import SetSocials from "./SetSocials";
 import Welcome from "./welcome";
 import SetProfilePicture from "./SetProfilePicture";
 import { useEffect } from "react";
-import RequirementsCheck from "../components/RequirementsCheck";
 import ProfilePage from "./profile";
 import EndOfCall from "./EndOfCall";
 import WaitingCall from "./WaitingCall";
@@ -46,15 +45,17 @@ const App = () => {
     >
       <SignedIn>
         <UserInfoProvider>
-          <RequirementsCheck>
-            <Stack.Navigator screenOptions={navigatorOptions}>
-              <Stack.Screen name="Admin" component={AdminPage} />
-              <Stack.Screen name="Home" component={Home} />
-              <Stack.Screen name="WaitingCall" component={WaitingCall} />
-              <Stack.Screen name="EndOfCall" component={EndOfCall} />
-              <Stack.Screen name="Profile" component={ProfilePage} />
-            </Stack.Navigator>
-          </RequirementsCheck>
+          <Stack.Navigator screenOptions={navigatorOptions}>
+            {/*<Stack.Screen
+                name="SetProfilePicture"
+                component={SetProfilePicture}
+              />
+              <Stack.Screen name="Admin" component={AdminPage} />*/}
+            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="WaitingCall" component={WaitingCall} />
+            <Stack.Screen name="EndOfCall" component={EndOfCall} />
+            <Stack.Screen name="Profile" component={ProfilePage} />
+          </Stack.Navigator>
         </UserInfoProvider>
       </SignedIn>
       <SignedOut>

@@ -87,9 +87,10 @@ const Admin = () => {
     voip.peerConnection.addEventListener("negotiationneeded", async () => {
       console.log("Negotiation needed");
       const offerDescription = await voip.createOffer();
-      voip.sendOffer(offerDescription);
 
-      // send offer to remote peer with a special tag of some sort
+      if (offerDescription.type === "offer") {
+        voip.sendOffer(offerDescription, "renegotiate");
+      }
     });
 
     voip.peerConnection.addEventListener(
@@ -114,6 +115,14 @@ const Admin = () => {
         voip.remoteID = payload.remoteID;
         voip.searching = false;
         voip.handleAnswer(payload);
+      }
+    });
+
+    voip.socket.on("renegotiation", async (payload) => {
+      if (payload.remoteID === voip.id) {
+        console.log(`${voip.id}: Got renegotiation from ${payload.id}`);
+        voip.remoteID = payload.id;
+        voip.handleOffer(payload.offerDescription);
       }
     });
 
