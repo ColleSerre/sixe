@@ -3,14 +3,16 @@ import SetSocials from "../app/SetSocials";
 import Welcome from "../app/welcome";
 import Users from "../types/users";
 import { useUser } from "@clerk/clerk-expo";
-import { useUserInfo } from "./UserProvider";
 import supabase from "../hooks/initSupabase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import UserContext from "../components/UserProvider";
 
-const RequirementsCheck = ({ children }) => {
-  const clerk = useUser().user.id;
-  const [user, setUser] = useState(useUserInfo());
-  const [reload, setReload] = useState(false);
+const Routing = ({ children }) => {
+  const clerk = useUser()?.user?.id;
+  const userInfo = useContext(UserContext);
+  const [loading, setLoading] = useState(true);
+  const [Screen, setScreen] = useState<JSX.Element>(<></>);
+  const [user, setUser] = useState<Users | null>(null);
 
   const usersChanges = supabase.channel("any").on(
     "postgres_changes",
@@ -27,37 +29,44 @@ const RequirementsCheck = ({ children }) => {
   );
 
   useEffect(() => {
+    if (userInfo !== "loading") {
+      setLoading(false);
+      setUser(userInfo);
+    }
+  }, [userInfo]);
+
+  useEffect(() => {
+    if (!clerk) {
+      setScreen(<Welcome />);
+    } else if (loading || !user) {
+      setScreen(<></>);
+    } else {
+      const u = user as Users;
+      console.log("Routing: ", u);
+      if (!u.profile_picture) {
+        console.log("No profile picture");
+        setScreen(<SetProfilePicture />);
+      } else if (!u.socials) {
+        console.log("No socials");
+        setScreen(<SetSocials />);
+      } else {
+        console.log("All requirements met");
+        setScreen(children);
+      }
+    }
+  }, [loading, user, children]);
+
+  useEffect(() => {
     return () => {
       usersChanges.unsubscribe();
     };
-  });
+  }, []);
 
   usersChanges.subscribe();
 
-  if (!clerk) {
-    console.log("Clerk is not logged in");
-    return <Welcome />;
-  }
+  console.log("Routing: ", Screen);
 
-  if (user) {
-    const u = user as Users;
-
-    if (!u.profile_picture) {
-      console.log("User has no profile picture");
-      return <SetProfilePicture />;
-    }
-
-    if (!u.socials) {
-      console.log("User has no socials");
-      return <SetSocials />;
-    }
-
-    console.log("User has all requirements");
-    return children;
-  } else {
-    console.log("User is not logged in");
-    return <Welcome />;
-  }
+  return Screen;
 };
 
-export default RequirementsCheck;
+export default Routing;

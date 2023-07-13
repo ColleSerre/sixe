@@ -13,6 +13,8 @@ import ProfilePage from "./profile";
 import EndOfCall from "./EndOfCall";
 import WaitingCall from "./WaitingCall";
 import AdminPage from "./admin";
+import RequirementsCheck from "../components/RequirementsCheck";
+import Routing from "../components/RequirementsCheck";
 
 const App = () => {
   const tokenCache = {
@@ -45,17 +47,15 @@ const App = () => {
     >
       <SignedIn>
         <UserInfoProvider>
-          <Stack.Navigator screenOptions={navigatorOptions}>
-            {/*<Stack.Screen
-                name="SetProfilePicture"
-                component={SetProfilePicture}
-              />
-              <Stack.Screen name="Admin" component={AdminPage} />*/}
-            <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="WaitingCall" component={WaitingCall} />
-            <Stack.Screen name="EndOfCall" component={EndOfCall} />
-            <Stack.Screen name="Profile" component={ProfilePage} />
-          </Stack.Navigator>
+          <Routing>
+            <Stack.Navigator screenOptions={navigatorOptions}>
+              <Stack.Screen name="Admin" component={AdminPage} />
+              <Stack.Screen name="Home" component={Home} />
+              <Stack.Screen name="WaitingCall" component={WaitingCall} />
+              <Stack.Screen name="EndOfCall" component={EndOfCall} />
+              <Stack.Screen name="Profile" component={ProfilePage} />
+            </Stack.Navigator>
+          </Routing>
         </UserInfoProvider>
       </SignedIn>
       <SignedOut>

@@ -348,7 +348,7 @@ const RecentCalls = ({ recent_calls, navigation }) => {
           gap: 41,
         }}
       >
-        {recent_calls == null ? (
+        {recent_calls == null || recent_calls?.length === 0 ? (
           <IntroSlideShow />
         ) : (
           recent_calls
@@ -442,10 +442,9 @@ const Home = ({ navigation }) => {
             <Ionicons name="flag" size={29} color="red" />
           </View>
         </View>
-        <RecentCalls recent_calls={u.recent_calls} navigation={navigation} />
 
-        {u.recent_calls == null ? (
-          <View />
+        {u.recent_calls == null || u.recent_calls.length === 0 ? (
+          <RecentCalls recent_calls={u.recent_calls} navigation={navigation} />
         ) : (
           <Pressable
             style={{

@@ -15,7 +15,6 @@ import { Ionicons } from "@expo/vector-icons";
 import colours from "../styles/colours";
 
 import { decode } from "base64-arraybuffer";
-import { useUserInfo } from "../components/UserProvider";
 import Users from "../types/users";
 import { Snackbar } from "react-native-paper";
 

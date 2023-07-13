@@ -27,12 +27,9 @@ export const UserInfoProvider = ({ children }) => {
       filter: "uid=eq." + user?.user?.id,
     },
     (payload) => {
-      console.log("User info updated");
       handleSupabaseUpdate();
     }
   );
-
-  const event = { event: "INSERT", schema: "public", table: "users" };
 
   const usersInserts = supabase.channel("any").on(
     "postgres_changes",
@@ -88,7 +85,7 @@ export const UserInfoProvider = ({ children }) => {
 
   return (
     <UserInfoContext.Provider value={userInfo}>
-      <RequirementsCheck>{children}</RequirementsCheck>
+      {children}
     </UserInfoContext.Provider>
   );
 };
