@@ -3,9 +3,8 @@ import { useUserInfo } from "../components/UserProvider";
 import LottieView from "lottie-react-native";
 import Users from "../types/users";
 import { CallEvents, WebRTCSimple } from "react-native-webrtc-simple";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import supabase from "../hooks/initSupabase";
-import Friend from "../types/friend";
 import { RTCView } from "react-native-webrtc";
 import { mediaDevices } from "react-native-webrtc";
 

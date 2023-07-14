@@ -11,11 +11,11 @@ import { useUser } from "@clerk/clerk-expo";
 import supabase from "../hooks/initSupabase";
 import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import colours from "../styles/colours";
 
 import { decode } from "base64-arraybuffer";
-import Users from "../types/users";
 import { Snackbar } from "react-native-paper";
 
 const SetProfilePicture = () => {
@@ -75,24 +75,29 @@ const SetProfilePicture = () => {
                     { format: SaveFormat.JPEG, base64: true }
                   );
 
-                  const { error } = await supabase.storage
-                    .from("profile_pictures")
-                    .upload(`public/${path}`, decode(manipResult.base64), {
-                      upsert: true,
-                    });
+                  setPhoto(manipResult);
+                }
 
-                  // update user profile picture path in the user row
-                  if (!error) {
-                    await supabase
-                      .from("users")
-                      .update({
-                        profile_picture: {
-                          path: `public/${path}`,
-                          type: type,
-                        },
-                      })
-                      .eq("uid", userID);
-                  }
+                const { error } = await supabase.storage
+                  .from("profile_pictures")
+                  .upload(`public/${path}`, decode(photo.base64), {
+                    upsert: true,
+                  });
+
+                // update user profile picture path in the user row
+                if (!error) {
+                  await supabase
+                    .from("users")
+                    .update({
+                      profile_picture: {
+                        path: `public/${path}`,
+                        type: type,
+                      },
+                    })
+                    .eq("uid", userID);
+                }
+                if (error) {
+                  console.log(error);
                 }
               }
             }}
@@ -116,6 +121,22 @@ const SetProfilePicture = () => {
               justifyContent: "center",
               borderColor: colours.chordleMyBallsKraz,
               borderWidth: 3,
+            }}
+            onPress={async () => {
+              let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+                base64: true,
+              });
+
+              setType(CameraType.back); // set to back camera to prevent flip on image render
+              console.log(result);
+
+              if (!result.canceled) {
+                setPhoto(result.assets[0]);
+              }
             }}
           >
             <Text

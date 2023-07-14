@@ -1,11 +1,11 @@
+import { useUser } from "@clerk/clerk-expo";
+import supabase from "../hooks/initSupabase";
+import UserContext from "../components/UserProvider";
+import Users from "../types/users";
 import SetProfilePicture from "../app/SetProfilePicture";
 import SetSocials from "../app/SetSocials";
 import Welcome from "../app/welcome";
-import Users from "../types/users";
-import { useUser } from "@clerk/clerk-expo";
-import supabase from "../hooks/initSupabase";
 import { useEffect, useState, useContext } from "react";
-import UserContext from "../components/UserProvider";
 
 const Routing = ({ children }) => {
   const clerk = useUser()?.user?.id;

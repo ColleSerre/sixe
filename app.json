@@ -16,6 +16,14 @@
       "versionCode": 1,
       "permissions": ["CAMERA", "RECORD_AUDIO"]
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app uses your photos to select a profile picture."
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "38ca343b-bab4-4f76-867a-ea8e204bbe6c"

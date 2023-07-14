@@ -49,10 +49,10 @@ const App = () => {
         <UserInfoProvider>
           <Routing>
             <Stack.Navigator screenOptions={navigatorOptions}>
-              <Stack.Screen name="Admin" component={AdminPage} />
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="WaitingCall" component={WaitingCall} />
               <Stack.Screen name="EndOfCall" component={EndOfCall} />
+              <Stack.Screen name="Admin" component={AdminPage} />
               <Stack.Screen name="Profile" component={ProfilePage} />
             </Stack.Navigator>
           </Routing>

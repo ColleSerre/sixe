@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  KeyboardAvoidingView,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import colours from "../styles/colours";
 // entry point, check for auth and render welcome page if not authed, else, reroute to home page
@@ -17,7 +23,6 @@ const MainText = (props: { content: string }) => {
         fontSize: 30,
         fontWeight: "bold",
         color: colours.chordleMyBallsKraz,
-        textAlign: "center",
       }}
     >
       {props.content}
@@ -31,7 +36,6 @@ const SecondaryText = (props: { content: string | undefined }) => {
       style={{
         fontSize: 20,
         color: "black",
-        textAlign: "center",
       }}
     >
       {props.content}
@@ -43,7 +47,6 @@ const Action = (props: { action: React.ReactNode | undefined }) => {
   return (
     <View
       style={{
-        flex: 1,
         justifyContent: "center",
         alignItems: "center",
       }}
@@ -59,29 +62,22 @@ const InfoPage = (props: InfoPageProps) => {
       style={{
         flex: 1,
         // align this to the middle of the screen, don't forget to pad everything out a bit (for text)
-        justifyContent: "center",
         margin: 23,
         marginTop: 100,
       }}
     >
-      <View
+      <KeyboardAvoidingView
         style={{
           flex: 1,
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
         }}
+        behavior={"padding"}
+        keyboardVerticalOffset={65}
       >
         <MainText content={props.header} />
         {/* put both of these into a row and align them to the left */}
         <SecondaryText content={props.secondary} />
-      </View>
-      <View
-        style={{
-          flex: 3,
-        }}
-      >
         {props.children}
-      </View>
+      </KeyboardAvoidingView>
       <Action action={props.action} />
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Pressable } from "react-native";
+import { View, Text, SafeAreaView, Pressable, StyleSheet } from "react-native";
 import { useUserInfo } from "../components/UserProvider";
 import Users from "../types/users";
 import colours from "../styles/colours";
@@ -8,239 +8,11 @@ import { Entypo } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useState } from "react";
 import { Camera } from "expo-camera";
+import Svg, { Circle } from "react-native-svg";
 
 const RecentCalls = ({ recent_calls, navigation }) => {
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [permission2, requestPermission2] = Camera.useMicrophonePermissions();
-
-  const IntroSlideShow = () => {
-    const [active, setActive] = useState(0);
-
-    const Content = ({ text1, text2, subheading }) => {
-      return (
-        <View
-          style={{
-            paddingHorizontal: 20,
-            justifyContent: "space-between",
-            flex: 1,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              marginBottom: 20,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "500",
-              }}
-            >
-              {text1}
-            </Text>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "700",
-                color: colours.chordleMyBallsKraz,
-              }}
-            >
-              {text2}
-            </Text>
-          </View>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: "400",
-              textAlign: "center",
-            }}
-          >
-            {subheading}
-          </Text>
-        </View>
-      );
-    };
-
-    const parts = [
-      {
-        title: "Let's get started !",
-        content: (
-          <Content
-            text1={"Looking for something specific ?"}
-            text2={"Customise your search with categories."}
-            subheading={
-              "(feel free to suggest new filters and we'll implement them)"
-            }
-          />
-        ),
-      },
-      {
-        title: "During your call",
-        content: (
-          <Content
-            text1={"You can leave whenever you want to, no questions asked."}
-            text2={"Share your socials if you want to keep in touch."}
-            subheading={"(keep it vibey and don't be a creep)"}
-          />
-        ),
-      },
-      {
-        title: "After your call",
-        content: (
-          <Content
-            text1={"You'll find your recent calls here."}
-            text2={"Now let's get started."}
-            subheading={"(daren.palmer.22@ucl.ac.uk for suggestions)"}
-          />
-        ),
-      },
-    ];
-
-    return (
-      <View
-        style={{
-          flex: 1,
-          borderColor: "black",
-          borderWidth: 3,
-          borderRadius: 20,
-          gap: 10,
-        }}
-      >
-        {/* Three pills to indicate progress in the tutorial */}
-        <View
-          style={{
-            margin: 20,
-            flexDirection: "row",
-            gap: 10,
-          }}
-        >
-          {parts.map((part, index) => {
-            return (
-              <Pressable
-                key={index}
-                style={{
-                  flex: 1,
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: active == index ? "black" : "grey",
-                }}
-                onPress={() => {
-                  setActive(index);
-                }}
-              />
-            );
-          })}
-
-          {/* Gesture handler gets the x coordinate of where it was tapped and if it's on the right it active + 1s it */}
-
-          {/* The content of the tutorial */}
-        </View>
-        <Text
-          style={{
-            fontSize: 23,
-            fontWeight: "700",
-            marginBottom: 15,
-            marginHorizontal: 20,
-          }}
-        >
-          {parts[active].title}
-        </Text>
-        <View
-          style={{
-            flex: 2,
-          }}
-        >
-          {parts[active].content}
-        </View>
-
-        {active < parts.length - 1 ? (
-          <View
-            style={{
-              margin: 20,
-              flexDirection: "row",
-              borderColor: "black",
-              borderWidth: 1,
-              borderRadius: 20,
-              height: 50,
-            }}
-          >
-            {/* Hide left arrow if active is 0 */}
-            <Pressable
-              onPress={() => {
-                if (active > 0) {
-                  setActive(active - 1);
-                }
-              }}
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                borderRightColor: "black",
-                borderRightWidth: 1,
-              }}
-            >
-              <Entypo name="chevron-left" size={24} color="black" />
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                if (active < parts.length - 1) {
-                  setActive(active + 1);
-                }
-              }}
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Entypo name="chevron-right" size={24} color="black" />
-            </Pressable>
-          </View>
-        ) : (
-          <View
-            style={{
-              margin: 20,
-              borderRadius: 20,
-              height: 50,
-            }}
-          >
-            <Pressable
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: colours.chordleMyBallsKraz,
-                borderRadius: 20,
-                height: 50,
-              }}
-              onPress={async () => {
-                if (permission.granted && permission2.granted) {
-                  navigation.navigate("WaitingCall", {
-                    category: "all",
-                  });
-                } else {
-                  if (!permission.granted) requestPermission();
-                  if (!permission2.granted) requestPermission2();
-                }
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 17,
-                  fontWeight: "400",
-                  color: "white",
-                }}
-              >
-                Start your first call
-              </Text>
-            </Pressable>
-          </View>
-        )}
-      </View>
-    );
-  };
 
   const RecentCallCard = ({ added, username, profilePicture, annecdote }) => {
     return (
@@ -343,30 +115,201 @@ const RecentCalls = ({ recent_calls, navigation }) => {
       <View
         style={{
           flex: 1,
-          alignContent: "center",
-          justifyContent: "center",
           gap: 41,
+          justifyContent: recent_calls?.length === 0 ? "flex-end" : "center",
+          alignContent: "center",
+          backgroundColor: "rgba(0, 0, 0, 0)",
         }}
       >
-        {recent_calls == null || recent_calls?.length === 0 ? (
-          <IntroSlideShow />
-        ) : (
-          recent_calls
-            .slice(0, 3)
-            .map((call, index) => (
-              <RecentCallCard
-                key={index}
-                added={call.added}
-                username={call.username}
-                profilePicture={call.profilePicture}
-                annecdote={call.annecdote}
-              />
-            ))
-        )}
+        {recent_calls.slice(0, 3).map((call, index) => (
+          <RecentCallCard
+            key={index}
+            added={call.added}
+            username={call.username}
+            profilePicture={call.profilePicture}
+            annecdote={call.annecdote}
+          />
+        ))}
       </View>
     </View>
   );
 };
+
+// a circle of interests users can join calls in
+
+const IntroSlideShow = ({ navigation }) => {
+  const [active, setActive] = useState(0);
+
+  const Content = ({ text1, text2, subheading }) => {
+    return (
+      <View
+        style={{
+          flex: 1,
+        }}
+      >
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 15,
+            fontWeight: "700",
+          }}
+        >
+          {text1}
+        </Text>
+        <Text
+          style={{
+            flex: 2,
+            fontSize: 20,
+            fontWeight: "700",
+            color: colours.chordleMyBallsKraz,
+          }}
+        >
+          {text2}
+        </Text>
+
+        {subheading}
+      </View>
+    );
+  };
+
+  const parts = [
+    {
+      title: "Let's get started !",
+      content: (
+        <Content
+          text1={"Looking for something specific ?"}
+          text2={"Customise your search with categories."}
+          subheading={
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 18,
+                fontWeight: "500",
+              }}
+            >
+              Keep it vibey and don't be a creep
+            </Text>
+          }
+        />
+      ),
+    },
+    {
+      title: "During your call",
+      content: (
+        <Content
+          text1={"You can leave whenever you want to, no questions asked."}
+          text2={"Share your socials if you want to keep in touch."}
+          subheading={
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 18,
+                fontWeight: "500",
+              }}
+            >
+              Keep it vibey and don't be a creep
+            </Text>
+          }
+        />
+      ),
+    },
+    {
+      title: "After your call",
+      content: (
+        <Content
+          text1={"Now let's get started."}
+          text2={"daren.palmer.22@ucl.ac.uk for suggestions"}
+          subheading={
+            <Pressable
+              style={{
+                backgroundColor: colours.chordleMyBallsKraz,
+                borderRadius: 25,
+                width: "100%",
+                height: 50,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 20,
+              }}
+              onPress={() => {
+                // navigation.navigate("Call");
+              }}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                <Text>Start call</Text>
+              </Text>
+            </Pressable>
+          }
+        />
+      ),
+    },
+  ];
+
+  return (
+    <Pressable
+      style={{
+        borderColor: "black",
+        borderWidth: 3,
+        borderRadius: 20,
+        gap: 10,
+        height: "40%",
+        width: "100%",
+      }}
+      onPress={(evt) => {
+        if (evt.nativeEvent.locationX > 200 && active < parts.length - 1) {
+          setActive(active + 1);
+        } else if (evt.nativeEvent.locationX < 100 && active > 0) {
+          setActive(active - 1);
+        }
+      }}
+    >
+      {/* Three pills to indicate progress in the tutorial */}
+      <View
+        style={{
+          margin: 20,
+          flexDirection: "row",
+          gap: 10,
+        }}
+      >
+        {parts.map((part, index) => {
+          return (
+            <Pressable
+              key={index}
+              style={{
+                flex: 1,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: active == index ? "black" : "grey",
+              }}
+              onPress={() => {
+                setActive(index);
+              }}
+            />
+          );
+        })}
+
+        {/* Gesture handler gets the x coordinate of where it was tapped and if it's on the right it active + 1s it */}
+
+        {/* The content of the tutorial */}
+      </View>
+      <View
+        style={{
+          flex: 1,
+          marginHorizontal: 20,
+        }}
+      >
+        {parts[active].content}
+      </View>
+    </Pressable>
+  );
+};
+
+const TopicPicker = ({ navigation, circleRadius }) => {};
 
 const Home = ({ navigation }) => {
   let user = useUserInfo();
@@ -444,7 +387,22 @@ const Home = ({ navigation }) => {
         </View>
 
         {u.recent_calls == null || u.recent_calls.length === 0 ? (
-          <RecentCalls recent_calls={u.recent_calls} navigation={navigation} />
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            {u.recent_calls == null || u.recent_calls.length === 0 ? (
+              <IntroSlideShow navigation={navigation} />
+            ) : (
+              <RecentCalls
+                recent_calls={u.recent_calls}
+                navigation={navigation}
+              />
+            )}
+          </View>
         ) : (
           <Pressable
             style={{

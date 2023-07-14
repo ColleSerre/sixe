@@ -6,7 +6,6 @@ import {
   RTCIceCandidate,
   mediaDevices,
   MediaStream,
-  MediaStreamTrack,
 } from "react-native-webrtc";
 import supabase from "../hooks/initSupabase";
 
