@@ -1,20 +1,17 @@
 import { CLERK_PUBLISHABLE_KEY } from "@env";
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
-import { useUserInfo, UserInfoProvider } from "../components/UserProvider";
+import { UserInfoProvider } from "../components/UserProvider";
 import { createStackNavigator } from "@react-navigation/stack";
-import Users from "../types/users";
 import Home from "./home";
 import SetSocials from "./SetSocials";
 import Welcome from "./welcome";
 import SetProfilePicture from "./SetProfilePicture";
-import { useEffect } from "react";
 import ProfilePage from "./profile";
-import EndOfCall from "./EndOfCall";
-import WaitingCall from "./WaitingCall";
-import AdminPage from "./admin";
-import RequirementsCheck from "../components/RequirementsCheck";
+import EndOfCall from "./RecentCalls";
 import Routing from "../components/RequirementsCheck";
+import Call from "../components/Call";
+import ReportScreen from "./report";
 
 const App = () => {
   const tokenCache = {
@@ -50,10 +47,10 @@ const App = () => {
           <Routing>
             <Stack.Navigator screenOptions={navigatorOptions}>
               <Stack.Screen name="Home" component={Home} />
-              <Stack.Screen name="WaitingCall" component={WaitingCall} />
+              <Stack.Screen name="Call" component={Call} />
               <Stack.Screen name="EndOfCall" component={EndOfCall} />
-              <Stack.Screen name="Admin" component={AdminPage} />
               <Stack.Screen name="Profile" component={ProfilePage} />
+              <Stack.Screen name="Report" component={ReportScreen} />
             </Stack.Navigator>
           </Routing>
         </UserInfoProvider>
@@ -61,11 +58,11 @@ const App = () => {
       <SignedOut>
         <Stack.Navigator screenOptions={navigatorOptions}>
           <Stack.Screen name="Welcome" component={Welcome} />
-          <Stack.Screen name="SetSocials" component={SetSocials} />
           <Stack.Screen
             name="SetProfilePicture"
             component={SetProfilePicture}
           />
+          <Stack.Screen name="SetSocials" component={SetSocials} />
         </Stack.Navigator>
       </SignedOut>
     </ClerkProvider>

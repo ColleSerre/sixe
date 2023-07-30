@@ -22,6 +22,7 @@ const SetProfilePicture = () => {
   const userID = useUser().user.id;
   let cameraRef = useRef<Camera>(null);
   const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
   const [hasPermission, setHasPermission] = useState(false);
   const [type, setType] = useState(CameraType.front);
   const [photo, setPhoto] = useState<CameraCapturedPicture | undefined>(
@@ -34,11 +35,8 @@ const SetProfilePicture = () => {
       action={
         <View
           style={{
-            flex: 1,
-            width: "100%",
             alignItems: "center",
-            justifyContent: "center",
-            gap: 18,
+            gap: 20,
           }}
         >
           <Pressable
@@ -65,6 +63,7 @@ const SetProfilePicture = () => {
                   })
                 );
               } else if (photo) {
+                setContent("Uploading...");
                 setLoading(true);
                 const path = `${userID}.jpg`;
 
@@ -89,10 +88,7 @@ const SetProfilePicture = () => {
                   await supabase
                     .from("users")
                     .update({
-                      profile_picture: {
-                        path: `public/${path}`,
-                        type: type,
-                      },
+                      profile_picture: `https://ucjolalmoughwxjvuxkn.supabase.co/storage/v1/object/public/profile_pictures/public/${path}`,
                     })
                     .eq("uid", userID);
                 }
@@ -123,6 +119,8 @@ const SetProfilePicture = () => {
               borderWidth: 3,
             }}
             onPress={async () => {
+              setContent("Processing...");
+              setLoading(true);
               let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
@@ -132,7 +130,6 @@ const SetProfilePicture = () => {
               });
 
               setType(CameraType.back); // set to back camera to prevent flip on image render
-              console.log(result);
 
               if (!result.canceled) {
                 setPhoto(result.assets[0]);
@@ -158,16 +155,14 @@ const SetProfilePicture = () => {
               },
             }}
           >
-            {loading ? "Uploading..." : "Uploaded!"}
+            {loading && content ? content : "Uploaded!"}
           </Snackbar>
         </View>
       }
     >
       <View
         style={{
-          flex: 2,
-          width: "100%",
-          flexDirection: "column",
+          flex: 1,
           alignItems: "center",
           justifyContent: "center",
         }}

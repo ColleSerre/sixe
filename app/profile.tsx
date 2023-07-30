@@ -1,5 +1,4 @@
 import {
-  FlatList,
   Pressable,
   SafeAreaView,
   Text,
@@ -11,11 +10,12 @@ import { useUserInfo } from "../components/UserProvider";
 import { FontAwesome } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import colours from "../styles/colours";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import supabase from "../hooks/initSupabase";
-import { useUser } from "@clerk/clerk-expo";
+import { useClerk, useUser } from "@clerk/clerk-expo";
 
 const ProfilePage = ({ navigation }) => {
+  const clerk = useClerk();
   const user = useUserInfo();
   const uid = useUser().user.id;
 
@@ -113,11 +113,12 @@ const ProfilePage = ({ navigation }) => {
       >
         <Image
           style={{
-            height: 100,
-            width: 100,
+            height: 200,
+            width: 200,
             borderRadius: 50,
           }}
           source={user.profile_picture}
+          cachePolicy="memory-disk"
         />
         <TextInput
           editable={EditProfilePageValues.editable[0]}
@@ -131,6 +132,19 @@ const ProfilePage = ({ navigation }) => {
           {user.username}
         </TextInput>
         {Usernames(user.socials)}
+        <Pressable
+          onPress={() => {
+            clerk.signOut();
+          }}
+        >
+          <Text
+            style={{
+              color: colours.chordleMyBallsKraz,
+            }}
+          >
+            Log out
+          </Text>
+        </Pressable>
       </View>
       <View
         style={{

@@ -7,14 +7,8 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import colours from "../styles/colours";
+import InfoPageProps from "../types/InfoPageProps";
 // entry point, check for auth and render welcome page if not authed, else, reroute to home page
-
-type InfoPageProps = {
-  header: string;
-  secondary?: string | undefined;
-  children: React.ReactNode;
-  action?: React.ReactNode;
-};
 
 const MainText = (props: { content: string }) => {
   return (
@@ -43,19 +37,6 @@ const SecondaryText = (props: { content: string | undefined }) => {
   );
 };
 
-const Action = (props: { action: React.ReactNode | undefined }) => {
-  return (
-    <View
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {props.action}
-    </View>
-  );
-};
-
 const InfoPage = (props: InfoPageProps) => {
   return (
     <SafeAreaView
@@ -78,7 +59,7 @@ const InfoPage = (props: InfoPageProps) => {
         <SecondaryText content={props.secondary} />
         {props.children}
       </KeyboardAvoidingView>
-      <Action action={props.action} />
+      {props.action}
     </SafeAreaView>
   );
 };

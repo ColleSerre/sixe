@@ -1,264 +1,140 @@
-import { View, Text, SafeAreaView, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Pressable,
+  ScrollView,
+  Linking,
+} from "react-native";
 import { useUserInfo } from "../components/UserProvider";
 import Users from "../types/users";
 import colours from "../styles/colours";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useState } from "react";
-import { Camera } from "expo-camera";
-import Svg, { Circle } from "react-native-svg";
-
-const RecentCalls = ({ recent_calls, navigation }) => {
-  const [permission, requestPermission] = Camera.useCameraPermissions();
-  const [permission2, requestPermission2] = Camera.useMicrophonePermissions();
-
-  const RecentCallCard = ({ added, username, profilePicture, annecdote }) => {
-    return (
-      <View
-        style={{
-          alignSelf: "center",
-          flexDirection: "row",
-          padding: 8,
-          gap: 10,
-          alignItems: "center",
-          width: "95%",
-          // neo brutalist border
-          backgroundColor: added ? colours.addedGreen : "rgba(0, 0, 0, 0)",
-          borderColor: added ? "rgba(0, 0, 0, 0)" : "black",
-          borderTopWidth: 3,
-          borderLeftWidth: 3,
-          borderRightWidth: 7,
-          borderBottomWidth: 7,
-          borderRadius: 17,
-        }}
-      >
-        <Image
-          source={profilePicture}
-          cachePolicy="memory-disk"
-          style={{
-            width: 89,
-            height: 89,
-            borderRadius: 15,
-          }}
-        />
-        <View
-          style={{
-            flex: 1,
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: "700",
-                fontSize: 14,
-              }}
-            >
-              {username}
-            </Text>
-            <View
-              style={{
-                alignSelf: "flex-end",
-                borderRadius: 20,
-                borderColor: "black",
-                borderWidth: 1,
-                width: 35,
-                height: 23,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: added ? 0 : 1,
-              }}
-            >
-              <Entypo name="cross" size={15} color="black" />
-            </View>
-          </View>
-          <Text
-            numberOfLines={3}
-            style={{
-              flex: 1,
-              flexWrap: "wrap",
-            }}
-          >
-            {annecdote}
-          </Text>
-        </View>
-      </View>
-    );
-  };
-
-  return (
-    <View
-      style={{
-        flex: 4,
-        gap: 21,
-      }}
-    >
-      {recent_calls?.length > 0 ? (
-        <Text
-          style={{
-            fontSize: 23,
-            fontWeight: "700",
-            marginBottom: 15,
-          }}
-        >
-          Recent calls
-        </Text>
-      ) : null}
-      <View
-        style={{
-          flex: 1,
-          gap: 41,
-          justifyContent: recent_calls?.length === 0 ? "flex-end" : "center",
-          alignContent: "center",
-          backgroundColor: "rgba(0, 0, 0, 0)",
-        }}
-      >
-        {recent_calls.slice(0, 3).map((call, index) => (
-          <RecentCallCard
-            key={index}
-            added={call.added}
-            username={call.username}
-            profilePicture={call.profilePicture}
-            annecdote={call.annecdote}
-          />
-        ))}
-      </View>
-    </View>
-  );
-};
-
-// a circle of interests users can join calls in
+import RecentCalls from "./RecentCalls";
 
 const IntroSlideShow = ({ navigation }) => {
   const [active, setActive] = useState(0);
 
-  const Content = ({ text1, text2, subheading }) => {
-    return (
-      <View
+  const parts = [
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "space-evenly",
+      }}
+    >
+      <Text
         style={{
-          flex: 1,
+          fontSize: 23,
+          fontWeight: "700",
+          marginBottom: 15,
+        }}
+      >
+        Welcome to TCE: Greet!
+      </Text>
+      <Text
+        style={{
+          fontSize: 17,
+          fontWeight: "500",
+        }}
+      >
+        Looking for a tennis partner ? Select the tennis interest to find your
+        next challenger !
+      </Text>
+    </View>,
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "space-evenly",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 23,
+          fontWeight: "700",
+        }}
+      >
+        Always feel safe
+      </Text>
+      <Text
+        style={{
+          fontSize: 17,
+          fontWeight: "500",
+        }}
+      >
+        Don't forget that you can leave the call at any time (press the little
+        red button 👨🏼‍✈️).{"\n"}Also, please don't be a creep.
+      </Text>
+    </View>,
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "space-evenly",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 23,
+          fontWeight: "700",
+        }}
+      >
+        Now, let's get started!
+      </Text>
+      <Text
+        style={{
+          fontSize: 17,
+          fontWeight: "500",
+        }}
+      >
+        <Pressable
+          onPress={() => Linking.openURL("mailto:daren.palmer.22@ucl.ac.uk")}
+        >
+          <Text
+            style={{
+              color: colours.chordleMyBallsKraz,
+            }}
+          >
+            daren.palmer.22@ucl.ac.uk
+          </Text>
+        </Pressable>{" "}
+        for any questions or feedback
+      </Text>
+      <Pressable
+        style={{
+          backgroundColor: colours.chordleMyBallsKraz,
+          width: "90%",
+          height: 40,
+          borderRadius: 30,
+          alignSelf: "center",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onPress={() => {
+          //navigation.navigate("Call");
         }}
       >
         <Text
           style={{
-            flex: 1,
-            fontSize: 15,
-            fontWeight: "700",
+            color: "white",
+            fontSize: 16,
           }}
         >
-          {text1}
+          Start Call
         </Text>
-        <Text
-          style={{
-            flex: 2,
-            fontSize: 20,
-            fontWeight: "700",
-            color: colours.chordleMyBallsKraz,
-          }}
-        >
-          {text2}
-        </Text>
-
-        {subheading}
-      </View>
-    );
-  };
-
-  const parts = [
-    {
-      title: "Let's get started !",
-      content: (
-        <Content
-          text1={"Looking for something specific ?"}
-          text2={"Customise your search with categories."}
-          subheading={
-            <Text
-              style={{
-                flex: 1,
-                fontSize: 18,
-                fontWeight: "500",
-              }}
-            >
-              Keep it vibey and don't be a creep
-            </Text>
-          }
-        />
-      ),
-    },
-    {
-      title: "During your call",
-      content: (
-        <Content
-          text1={"You can leave whenever you want to, no questions asked."}
-          text2={"Share your socials if you want to keep in touch."}
-          subheading={
-            <Text
-              style={{
-                flex: 1,
-                fontSize: 18,
-                fontWeight: "500",
-              }}
-            >
-              Keep it vibey and don't be a creep
-            </Text>
-          }
-        />
-      ),
-    },
-    {
-      title: "After your call",
-      content: (
-        <Content
-          text1={"Now let's get started."}
-          text2={"daren.palmer.22@ucl.ac.uk for suggestions"}
-          subheading={
-            <Pressable
-              style={{
-                backgroundColor: colours.chordleMyBallsKraz,
-                borderRadius: 25,
-                width: "100%",
-                height: 50,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 20,
-              }}
-              onPress={() => {
-                // navigation.navigate("Call");
-              }}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  fontSize: 16,
-                  fontWeight: "600",
-                }}
-              >
-                <Text>Start call</Text>
-              </Text>
-            </Pressable>
-          }
-        />
-      ),
-    },
+      </Pressable>
+    </View>,
   ];
-
   return (
     <Pressable
       style={{
+        flex: 1,
         borderColor: "black",
         borderWidth: 3,
         borderRadius: 20,
-        gap: 10,
-        height: "40%",
         width: "100%",
+        height: 200,
       }}
       onPress={(evt) => {
         if (evt.nativeEvent.locationX > 200 && active < parts.length - 1) {
@@ -268,7 +144,6 @@ const IntroSlideShow = ({ navigation }) => {
         }
       }}
     >
-      {/* Three pills to indicate progress in the tutorial */}
       <View
         style={{
           margin: 20,
@@ -284,7 +159,11 @@ const IntroSlideShow = ({ navigation }) => {
                 flex: 1,
                 height: 10,
                 borderRadius: 5,
-                backgroundColor: active == index ? "black" : "grey",
+                elevation: 5,
+                backgroundColor:
+                  active == index
+                    ? colours.chordleMyBallsKraz
+                    : "rgba(0,0,0,0.1)",
               }}
               onPress={() => {
                 setActive(index);
@@ -292,27 +171,126 @@ const IntroSlideShow = ({ navigation }) => {
             />
           );
         })}
-
-        {/* Gesture handler gets the x coordinate of where it was tapped and if it's on the right it active + 1s it */}
-
-        {/* The content of the tutorial */}
       </View>
       <View
         style={{
           flex: 1,
           marginHorizontal: 20,
+          justifyContent: "space-evenly",
         }}
       >
-        {parts[active].content}
+        {parts[active]}
       </View>
     </Pressable>
   );
 };
 
-const TopicPicker = ({ navigation, circleRadius }) => {};
-
 const Home = ({ navigation }) => {
   let user = useUserInfo();
+  const [selectedTopic, setSelectedTopic] = useState("anything");
+
+  const TopicPicker = () => {
+    const Topics = [
+      "Politics 🏛",
+      "Sports ⚽️",
+      "Gaming 🎮",
+      "Entreupreneuship 🧠",
+      "Cinema 🎬",
+      "Music 🎵",
+      "Business 💼",
+      "Art 🎨",
+    ];
+
+    const TopicPill = ({ topic, active }) => {
+      return (
+        <Pressable
+          style={{
+            borderRadius: 25,
+            paddingHorizontal: 20,
+            height: 50,
+
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor:
+              topic == selectedTopic ? borderColours[2] : borderColours[1],
+          }}
+          onPress={() => {
+            setSelectedTopic(topic);
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "600",
+              color: "#1e1e1e",
+            }}
+          >
+            {topic}
+          </Text>
+        </Pressable>
+      );
+    };
+
+    const borderColours = [
+      "#DFDFFB",
+      "#D1E3FA",
+      "#66A1EE",
+      colours.chordleMyBallsKraz,
+    ];
+
+    return (
+      <ScrollView
+        horizontal
+        contentContainerStyle={{
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        {Topics.map((topic, index) => {
+          return (
+            <TopicPill
+              key={index}
+              topic={topic}
+              active={topic[index] === selectedTopic}
+            />
+          );
+        })}
+      </ScrollView>
+    );
+  };
+
+  const LaunchCall = () => {
+    // randomise the users online
+    const users_online = Math.floor(Math.random() * 50);
+
+    return (
+      <Pressable
+        style={{
+          borderRadius: 25,
+          padding: 20,
+          backgroundColor: colours.chordleMyBallsKraz,
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexDirection: "row",
+        }}
+        onPress={() => {
+          navigation.navigate("Call");
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "500",
+            color: "white",
+          }}
+        >
+          Launch a call about{" "}
+          {selectedTopic === "any" ? "anything" : selectedTopic}
+        </Text>
+        <Ionicons name="arrow-forward-circle" size={30} color="white" />
+      </Pressable>
+    );
+  };
 
   if (user) {
     const u = user as Users;
@@ -321,7 +299,8 @@ const Home = ({ navigation }) => {
         style={{
           flex: 1,
           marginHorizontal: 20,
-          gap: 21,
+          gap: 20,
+          justifyContent: "space-evenly",
         }}
       >
         {/* First Row: Welcome + username | vertical bar with account, new features, report */}
@@ -369,10 +348,14 @@ const Home = ({ navigation }) => {
                 navigation.navigate("Profile");
               }}
             >
-              <MaterialCommunityIcons
-                name="account"
-                size={29}
-                color="rgba(255, 255, 255, 0.3)"
+              <Image
+                source={u.profile_picture}
+                style={{
+                  height: 40,
+                  width: 40,
+                  borderRadius: 25,
+                }}
+                cachePolicy="memory-disk"
               />
             </Pressable>
             <Text
@@ -382,55 +365,26 @@ const Home = ({ navigation }) => {
             >
               ✨
             </Text>
-            <Ionicons name="flag" size={29} color="red" />
-          </View>
-        </View>
-
-        {u.recent_calls == null || u.recent_calls.length === 0 ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "flex-end",
-              alignItems: "center",
-            }}
-          >
-            {u.recent_calls == null || u.recent_calls.length === 0 ? (
-              <IntroSlideShow navigation={navigation} />
-            ) : (
-              <RecentCalls
-                recent_calls={u.recent_calls}
-                navigation={navigation}
-              />
-            )}
-          </View>
-        ) : (
-          <Pressable
-            style={{
-              alignSelf: "center",
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: colours.chordleMyBallsKraz,
-              paddingVertical: 20,
-              paddingHorizontal: 13,
-              height: 70,
-              width: "60%",
-              borderRadius: 300,
-            }}
-            onPress={() => {
-              navigation.navigate("WaitingCall");
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 17,
-                fontWeight: "500",
-                color: "white",
+            <Pressable
+              onPress={() => {
+                navigation.navigate("Report");
               }}
             >
-              New Call
-            </Text>
-          </Pressable>
+              <Ionicons name="flag" size={29} color="red" />
+            </Pressable>
+          </View>
+        </View>
+        <View>
+          <TopicPicker />
+        </View>
+
+        {u.recent_calls.length < 1 ? (
+          <IntroSlideShow navigation={navigation} />
+        ) : (
+          <RecentCalls recent_calls={u.recent_calls} />
         )}
+
+        <LaunchCall />
       </SafeAreaView>
     );
   } else {

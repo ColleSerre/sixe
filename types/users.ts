@@ -10,6 +10,7 @@ type Users = {
   email_verified: boolean | null;
   anecdote: string | null;
   recent_calls: Friend[] | null;
+  requests: string[] | null;
 };
 
 export default Users;

@@ -36,48 +36,54 @@ const SetSocials = () => {
       header={"Drop some usernames,"}
       secondary={"So your new friends can text you"}
       action={
-        <Pressable
-          onPress={async () => {
-            if (!instagram && !snapchat && !tiktok && !linkedin) {
-              setSnackbar(true);
-              return;
-            }
-
-            const { data, error } = await supabase
-              .from("users")
-              .update({
-                socials: {
-                  instagram: instagram,
-                  snapchat: snapchat,
-                  tiktok: tiktok,
-                  linkedin: linkedin,
-                },
-              })
-              .eq("uid", user.user.id);
-            if (data || error) {
-              console.log(data, error);
-            }
-          }}
+        <View
           style={{
-            backgroundColor: colours.chordleMyBallsKraz,
-            borderRadius: 25,
-            width: "70%",
-            height: 55,
             alignItems: "center",
-            justifyContent: "center",
-            opacity: instagram || snapchat || tiktok || linkedin ? 1 : 0.5,
           }}
         >
-          <Text
+          <Pressable
+            onPress={async () => {
+              if (!instagram && !snapchat && !tiktok && !linkedin) {
+                setSnackbar(true);
+                return;
+              }
+
+              const { data, error } = await supabase
+                .from("users")
+                .update({
+                  socials: {
+                    instagram: instagram,
+                    snapchat: snapchat,
+                    tiktok: tiktok,
+                    linkedin: linkedin,
+                  },
+                })
+                .eq("uid", user.user.id);
+              if (data || error) {
+                console.log(data, error);
+              }
+            }}
             style={{
-              color: "white",
-              fontSize: 16,
-              fontWeight: "600",
+              backgroundColor: colours.chordleMyBallsKraz,
+              borderRadius: 25,
+              width: "70%",
+              height: 55,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: instagram || snapchat || tiktok || linkedin ? 1 : 0.5,
             }}
           >
-            Next
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 16,
+                fontWeight: "600",
+              }}
+            >
+              Next
+            </Text>
+          </Pressable>
+        </View>
       }
     >
       <View

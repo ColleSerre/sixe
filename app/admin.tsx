@@ -10,14 +10,14 @@
 */
 
 import { useState, useEffect } from "react";
-import { View, Button } from "react-native";
-import { RTCView, MediaStream } from "react-native-webrtc";
+import { View, Button, SafeAreaView, Text } from "react-native";
+import { RTCView, MediaStream, mediaDevices } from "react-native-webrtc";
 import VoIP from "../components/VoIP";
 
 const Admin = () => {
   const voip: VoIP = new VoIP();
-
-  const [url, setUrl] = useState<string | undefined>(undefined);
+  const [localStream, setLocalStream] = useState<MediaStream>();
+  const [remoteStream, setRemoteStream] = useState<MediaStream>();
 
   useEffect(() => {
     // always check that the user is receiving the correct data
@@ -36,129 +36,85 @@ const Admin = () => {
     voip.listenForInserts.subscribe();
     voip.listenForUpdates.subscribe();
 
-    voip.peerConnection.onicecandidate = (event) => {
-      if (!event.candidate) {
-        return; // All ICE candidates have been sent
-      }
+    if (voip.searching) {
+      console.log("Listening...");
+    } else {
+      console.log("Not listening...");
+    }
 
-      if (!voip.remoteID || !voip.peerConnection.remoteDescription) {
-        voip.localCandidates.push(event.candidate);
-        return;
-      }
+    if (voip.remoteMediaStream) {
+      setRemoteStream(voip.remoteMediaStream);
+    }
 
-      if (voip.id && voip.remoteID && event.candidate) {
-        console.log("Sending ice candidate", event.candidate);
-        voip.socket.emit("send_ice", {
-          sender: voip.id,
-          receiver: voip.remoteID,
-          ice_candidate: event.candidate,
+    /*The MediaDevices interface allows you to access connected media inputs such as cameras and microphones. We ask the user for permission to access those media inputs by invoking the mediaDevices.getUserMedia() method. */
+
+    mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: {
+          facingMode: "user",
+        },
+      })
+      .then((stream) => {
+        // Get local stream!
+        console.log("stream", stream.toURL());
+        setLocalStream(stream);
+        voip.localStream = stream;
+        stream.getTracks().forEach((track) => {
+          voip.peerConnection.addTrack(track, stream);
         });
-      }
-    };
-
-    voip.peerConnection.onconnectionstatechange = (event) => {
-      voip.connectionState = voip.peerConnection.connectionState;
-      console.log("Connection state changed to", voip.connectionState);
-
-      if (voip.connectionState === "connected") {
-        // send all local candidates to the remote peer
-        voip.localCandidates.forEach((candidate) => {
-          if (voip.id && voip.remoteID && candidate) {
-            voip.socket.emit("send_ice", {
-              id: voip.id,
-              remoteID: voip.remoteID,
-              ice_candidate: candidate,
-            });
-          }
-        });
-      }
-    };
-
-    voip.peerConnection.addEventListener("track", (event) => {
-      console.log("Got remote track:", event);
-
-      if (!voip.remoteMediaStream) {
-        voip.remoteMediaStream = new MediaStream(undefined);
-      }
-
-      voip.remoteMediaStream.addTrack(event.track);
-    });
-
-    voip.peerConnection.addEventListener("negotiationneeded", async () => {
-      console.log("Negotiation needed");
-      const offerDescription = await voip.createOffer();
-
-      if (offerDescription.type === "offer") {
-        voip.sendOffer(offerDescription, "renegotiate");
-      }
-    });
-
-    voip.peerConnection.addEventListener(
-      "iceconnectionstatechange",
-      (event) => {
-        if (voip.peerConnection.iceConnectionState === "disconnected") {
-          voip.peerConnection.close();
-        }
-
-        if (voip.peerConnection.iceConnectionState === "connected") {
-          setUrl(voip.remoteMediaStream?.toURL());
-          console.log(url);
-        }
-
-        console.log("ICE connection state changed to", event);
-      }
-    );
-
-    voip.socket.on("server_answer", async (payload) => {
-      if (payload.id === voip.id) {
-        console.log(`${voip.id}: Got server answer from ${payload.remoteID}`);
-        voip.remoteID = payload.remoteID;
-        voip.searching = false;
-        voip.handleAnswer(payload);
-      }
-    });
-
-    voip.socket.on("renegotiation", async (payload) => {
-      if (payload.remoteID === voip.id) {
-        console.log(`${voip.id}: Got renegotiation from ${payload.id}`);
-        voip.remoteID = payload.id;
-        voip.handleOffer(payload.offerDescription);
-      }
-    });
-
-    voip.socket.on("ice_candidate", (payload) => {
-      if (payload.receiver === voip.id) {
-        console.log("Got ice candidate", payload);
-        voip.handleIceCandidate(payload.ice_candidate);
-      }
-    });
-
-    voip.getLocalStream().then((stream) => {
-      voip.localStream = stream;
-      stream.getTracks().forEach((track) => {
-        if (track.kind === "audio") {
-          return;
-        }
-
-        console.log("Adding track to call", track);
-        voip.peerConnection.addTrack(track, voip.localStream);
+      })
+      .catch((error) => {
+        // Log error
+        console.error(error);
+        throw error;
       });
-    });
 
     return () => {
       voip.listenForInserts.unsubscribe();
       voip.listenForUpdates.unsubscribe();
     };
-  }, [voip]);
+  }, [voip.searching, voip.remoteID, voip.id]);
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
       }}
     >
+      <Text
+        style={{
+          flex: 1,
+          fontSize: 20,
+        }}
+      >
+        {voip.id}
+      </Text>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          justifyContent: "center",
+        }}
+      >
+        <RTCView
+          streamURL={localStream?.toURL()}
+          mirror={true}
+          style={{
+            flex: 1,
+          }}
+        />
+
+        <RTCView
+          streamURL={remoteStream?.toURL()}
+          mirror={true}
+          style={{
+            flex: 1,
+          }}
+        />
+      </View>
       <Button
         title="Start Call"
         onPress={async () => {
@@ -167,23 +123,19 @@ const Admin = () => {
           voip.searching = true;
         }}
       />
-      {url && (
-        <>
-          <RTCView
-            mirror={true}
-            objectFit={"cover"}
-            streamURL={voip.remoteMediaStream?.toURL()}
-            zOrder={0}
-            style={{
-              width: "60%",
-              height: "60%",
-              position: "absolute",
-              backgroundColor: "black",
-            }}
-          />
-        </>
-      )}
-    </View>
+      <Button
+        title="Snapshot"
+        onPress={() => {
+          console.log(
+            "snapshot of variables",
+            voip.remoteMediaStream,
+            voip.localStream,
+            voip.peerConnection,
+            voip.searching
+          );
+        }}
+      />
+    </SafeAreaView>
   );
 };
 
