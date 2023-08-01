@@ -64,7 +64,7 @@ const RecentCalls = ({ recent_calls }) => {
                 height: 50,
                 borderRadius: 50,
               }}
-              cachePolicy="memory-disk"
+              cachePolicy="disk"
             />
             <Text
               style={{

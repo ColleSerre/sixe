@@ -12,8 +12,14 @@ import colours from "../styles/colours";
 import { Ionicons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import Constants from "expo-constants";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import RecentCalls from "./RecentCalls";
+
+import { Platform } from "react-native";
+import supabase from "../hooks/initSupabase";
 
 const IntroSlideShow = ({ navigation }) => {
   const [active, setActive] = useState(0);
@@ -185,8 +191,88 @@ const IntroSlideShow = ({ navigation }) => {
   );
 };
 
+async function registerForPushNotificationsAsync(uid: string) {
+  let token;
+  if (Device.isDevice) {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
+    }
+    token = await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig.extra.eas.projectId,
+    });
+  } else {
+    alert("Must use physical device for Push Notifications");
+  }
+
+  if (Platform.OS === "android") {
+    Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: "#FF231F7C",
+    });
+  }
+
+  return token;
+}
+
 const Home = ({ navigation }) => {
   let user = useUserInfo();
+
+  // Push notifications Registration
+
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const [notification, setNotification] = useState(null);
+  const notificationListener = useRef(null);
+  const responseListener = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      const _u = user as Users;
+
+      if (_u.uid && _u.push_token == null) {
+        registerForPushNotificationsAsync(_u.uid).then(
+          (token: { type: string; data: string }) => {
+            setExpoPushToken(token.data);
+            console.log(token.data);
+            supabase
+              .from("users")
+              .update({ push_token: token.data })
+              .eq("uid", _u.uid)
+              .then(({ data, error }) => console.log(data, error));
+          }
+        );
+
+        notificationListener.current =
+          Notifications.addNotificationReceivedListener((notification) => {
+            setNotification(notification);
+          });
+
+        responseListener.current =
+          Notifications.addNotificationResponseReceivedListener((response) => {
+            console.log(response);
+          });
+
+        return () => {
+          Notifications.removeNotificationSubscription(
+            notificationListener.current
+          );
+          Notifications.removeNotificationSubscription(
+            responseListener.current
+          );
+        };
+      }
+    }
+  }, [user]);
+
   const [selectedTopic, setSelectedTopic] = useState("anything");
 
   const TopicPicker = () => {
@@ -355,7 +441,7 @@ const Home = ({ navigation }) => {
                   width: 40,
                   borderRadius: 25,
                 }}
-                cachePolicy="memory-disk"
+                cachePolicy="disk"
               />
             </Pressable>
             <Text

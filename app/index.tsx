@@ -1,7 +1,10 @@
 import { CLERK_PUBLISHABLE_KEY } from "@env";
-import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
+import { ClerkProvider, SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
 import { UserInfoProvider } from "../components/UserProvider";
+import Constants from "expo-constants";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./home";
 import SetSocials from "./SetSocials";
@@ -13,7 +16,18 @@ import Routing from "../components/RequirementsCheck";
 import Call from "../components/Call";
 import ReportScreen from "./report";
 
+// Notification handler
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 const App = () => {
+  // Auth token cache
   const tokenCache = {
     async getToken(key: string) {
       try {
@@ -30,6 +44,8 @@ const App = () => {
       }
     },
   };
+
+  // Navigation
 
   const Stack = createStackNavigator();
 

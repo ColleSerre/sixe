@@ -7,8 +7,9 @@ import supabase from "../hooks/initSupabase";
 import { useUser } from "@clerk/clerk-expo";
 import Users from "../types/users";
 import colours from "../styles/colours";
+import { Snackbar } from "react-native-paper";
 
-const ReportScreen = () => {
+const ReportScreen = ({ navigation }) => {
   const me = useUser().user.id;
 
   const [reasons, setReasons] = useState(["Spam", "Inappropriate", "Other"]);
@@ -120,6 +121,7 @@ const ReportScreen = () => {
   };
 
   const [extraInfo, setExtraInfo] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const reportScreenProps: InfoPageProps = {
     header: "Report",
@@ -168,8 +170,7 @@ const ReportScreen = () => {
     action: (
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "center",
+          alignItems: "center",
           marginTop: 20,
         }}
       >
@@ -184,6 +185,7 @@ const ReportScreen = () => {
             width: "60%",
           }}
           onPress={() => {
+            setLoading(true);
             console.log("Reporting user");
 
             supabase
@@ -196,12 +198,14 @@ const ReportScreen = () => {
                   more: extraInfo,
                 },
               ])
-              .then(({ data, error }) => {
-                if (error) {
-                  console.log(error);
-                } else if (data) {
-                  console.log(data);
-                }
+              .then(({ error }) => {
+                if (!error) {
+                  console.log("Reported user");
+                  setTimeout(() => {
+                    setLoading(false);
+                    navigation.navigate("Home");
+                  }, 1000);
+                } else console.log(error);
               });
           }}
         >
@@ -214,6 +218,20 @@ const ReportScreen = () => {
             Submit
           </Text>
         </Pressable>
+        <Snackbar
+          visible={loading}
+          onDismiss={() => {
+            console.log("Dismissed");
+          }}
+          action={{
+            label: "Dismiss",
+            onPress: () => {
+              console.log("Dismissed");
+            },
+          }}
+        >
+          Reporting User...
+        </Snackbar>
       </View>
     ),
   };

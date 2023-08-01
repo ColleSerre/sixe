@@ -1,6 +1,7 @@
 import Friend from "./friend";
 
 type Users = {
+  push_token: string | null;
   uid: string;
   username: string | null;
   email: string | null;

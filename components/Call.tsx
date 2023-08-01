@@ -2,10 +2,10 @@ import React from "react";
 import { View } from "react-native";
 import { WebView } from "react-native-webview";
 import { useUser } from "@clerk/clerk-expo";
+import colours from "../styles/colours";
 
 const Call = ({ navigator }) => {
   const user = useUser().user.id;
-  const [show, setShow] = React.useState(false);
 
   if (user == null) {
     return <View></View>;
@@ -13,8 +13,13 @@ const Call = ({ navigator }) => {
 
   return (
     <WebView
-      style={{ flex: 1, opacity: show ? 1 : 0 }}
+      style={{ flex: 1, backgroundColor: colours.chordleMyBallsKraz }}
       originWhitelist={["*"]}
+      onError={(syntheticEvent) => {
+        const { nativeEvent } = syntheticEvent;
+        console.warn("WebView error: ", nativeEvent);
+      }}
+      javaScriptEnabled={true}
       allowUniversalAccessFromFileURLs={true}
       allowsBackForwardNavigationGestures={false}
       allowsFullscreenVideo={true}
@@ -26,18 +31,8 @@ const Call = ({ navigator }) => {
         uri: `https://webrtc-greet.vercel.app?uid=${user}`,
       }}
       onLoad={(event) => {
-        if (
-          event.nativeEvent.url === "https://webrtc-greet.vercel.app/" &&
-          event.nativeEvent.loading === false
-        ) {
-          setShow(true);
-          console.log("loaded");
-        } else if (
-          event.nativeEvent.url.startsWith(
-            "https://webrtc-greet.vercel.app/end"
-          )
-        ) {
-          navigator.navigate("Home");
+        if (event.nativeEvent.loading == false) {
+          console.log("first load");
         }
       }}
     />
