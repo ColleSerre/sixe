@@ -5,18 +5,18 @@ import {
   Pressable,
   ScrollView,
   Linking,
+  FlatList,
 } from "react-native";
 import { useUserInfo } from "../components/UserProvider";
 import Users from "../types/users";
 import colours from "../styles/colours";
 import { Ionicons } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useEffect, useState, useRef } from "react";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import RecentCalls from "./RecentCalls";
+import { useEffect, useState, useRef } from "react";
 
 import { Platform } from "react-native";
 import supabase from "../hooks/initSupabase";
@@ -225,7 +225,7 @@ async function registerForPushNotificationsAsync(uid: string) {
 }
 
 const Home = ({ navigation }) => {
-  let user = useUserInfo();
+  let user = useRef(useUserInfo()).current;
 
   // Push notifications Registration
 
@@ -233,6 +233,17 @@ const Home = ({ navigation }) => {
   const [notification, setNotification] = useState(null);
   const notificationListener = useRef(null);
   const responseListener = useRef(null);
+  const [selectedTopic, setSelectedTopic] = useState("anything");
+  const Topics = [
+    "Politics 🏛",
+    "Sports ⚽️",
+    "Gaming 🎮",
+    "Entreupreneuship 🧠",
+    "Cinema 🎬",
+    "Music 🎵",
+    "Business 💼",
+    "Art 🎨",
+  ];
 
   useEffect(() => {
     if (user) {
@@ -273,91 +284,24 @@ const Home = ({ navigation }) => {
     }
   }, [user]);
 
-  const [selectedTopic, setSelectedTopic] = useState("anything");
-
-  const TopicPicker = () => {
-    const Topics = [
-      "Politics 🏛",
-      "Sports ⚽️",
-      "Gaming 🎮",
-      "Entreupreneuship 🧠",
-      "Cinema 🎬",
-      "Music 🎵",
-      "Business 💼",
-      "Art 🎨",
-    ];
-
-    const TopicPill = ({ topic, active }) => {
-      return (
-        <Pressable
-          style={{
-            borderRadius: 25,
-            paddingHorizontal: 20,
-            height: 50,
-
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor:
-              topic == selectedTopic ? borderColours[2] : borderColours[1],
-          }}
-          onPress={() => {
-            setSelectedTopic(topic);
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-              color: "#1e1e1e",
-            }}
-          >
-            {topic}
-          </Text>
-        </Pressable>
-      );
-    };
-
-    const borderColours = [
-      "#DFDFFB",
-      "#D1E3FA",
-      "#66A1EE",
-      colours.chordleMyBallsKraz,
-    ];
-
-    return (
-      <ScrollView
-        horizontal
-        contentContainerStyle={{
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        {Topics.map((topic, index) => {
-          return (
-            <TopicPill
-              key={index}
-              topic={topic}
-              active={topic[index] === selectedTopic}
-            />
-          );
-        })}
-      </ScrollView>
-    );
-  };
-
   const LaunchCall = () => {
-    // randomise the users online
-    const users_online = Math.floor(Math.random() * 50);
-
     return (
       <Pressable
         style={{
           borderRadius: 25,
           padding: 20,
           backgroundColor: colours.chordleMyBallsKraz,
-          justifyContent: "space-between",
+          justifyContent: "center",
           alignItems: "center",
           flexDirection: "row",
+          // boxshadow
+          shadowColor: colours.chordleMyBallsKraz,
+          shadowOffset: {
+            width: 0,
+            height: 5,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
         }}
         onPress={() => {
           navigation.navigate("Call");
@@ -365,7 +309,7 @@ const Home = ({ navigation }) => {
       >
         <Text
           style={{
-            fontSize: 20,
+            fontSize: 17,
             fontWeight: "500",
             color: "white",
           }}
@@ -373,7 +317,6 @@ const Home = ({ navigation }) => {
           Launch a call about{" "}
           {selectedTopic === "any" ? "anything" : selectedTopic}
         </Text>
-        <Ionicons name="arrow-forward-circle" size={30} color="white" />
       </Pressable>
     );
   };
@@ -461,13 +404,65 @@ const Home = ({ navigation }) => {
           </View>
         </View>
         <View>
-          <TopicPicker />
+          {/*// Topic Picker is put here to prevent scroll reset on setState (only way i've found: https://stackoverflow.com/questions/61293265/react-native-scrollview-resets-positon-on-setstate)
+           */}
+          <FlatList
+            horizontal={true}
+            data={Topics}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => {
+              return (
+                <>
+                  <Pressable
+                    onPress={() => {
+                      setSelectedTopic(item);
+                    }}
+                    style={{
+                      backgroundColor:
+                        selectedTopic == item
+                          ? colours.chordleMyBallsKraz
+                          : "white",
+                      borderRadius: 20,
+                      paddingHorizontal: 20,
+                      height: 50,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: selectedTopic == item ? "white" : "black",
+                      }}
+                    >
+                      {item}
+                    </Text>
+                  </Pressable>
+                  <View style={{ width: 10 }} />
+                </>
+              );
+            }}
+          />
         </View>
 
         {u.recent_calls.length < 1 ? (
           <IntroSlideShow navigation={navigation} />
         ) : (
-          <RecentCalls recent_calls={u.recent_calls} />
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 25,
+                fontWeight: "bold",
+                marginBottom: 20,
+              }}
+            >
+              Recent Calls
+            </Text>
+            <RecentCalls recent_calls={u.recent_calls} />
+          </View>
         )}
 
         <LaunchCall />

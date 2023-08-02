@@ -1,21 +1,20 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import supabase from "../hooks/initSupabase";
 import { useEffect, useState } from "react";
 import Users from "../types/users";
-import { FontAwesome5 } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { useUser } from "@clerk/clerk-expo";
+import React from "react";
+import colours from "../styles/colours";
 
 const RecentCalls = ({ recent_calls }) => {
   const [recentCalls, setRecentCalls] = useState<string[]>(recent_calls);
 
   const me = useUser().user.id;
 
-  const FriendTile = ({ friend, me }) => {
+  const FriendTile = ({ friend, me, index }) => {
     const [friendData, setFriendData] = useState<Users>(null);
-
-    useEffect(() => {}, [recentCalls]);
 
     const fetchFriend = async () => {
       const { data, error } = await supabase
@@ -63,12 +62,13 @@ const RecentCalls = ({ recent_calls }) => {
                 width: 50,
                 height: 50,
                 borderRadius: 50,
+                backgroundColor: "#1e1e1e",
               }}
               cachePolicy="disk"
             />
             <Text
               style={{
-                fontSize: 20,
+                fontSize: 17,
               }}
             >
               {friendData.username}
@@ -89,39 +89,40 @@ const RecentCalls = ({ recent_calls }) => {
                 // send notification to friend saying you sent your socials to them, this is done by adding a row to the notifications table
                 // the notifications server takes care of sending the notification to the friend
                 // your notifications are consultable in the requests property
-                supabase
-                  .from("notifications")
-                  .insert([
-                    {
-                      requester: me,
-                      requested: friend,
-                      init_at: new Date(),
-                    },
-                  ])
-                  .then(({ data, error }) => {
-                    if (error) {
-                      console.log(error);
-                    }
-                    if (data) {
-                      console.log(data);
-                    }
-                    if (!error) {
-                      // remove node from list, the socials have been sent there's no use for it anymore
-                      setRecentCalls(recentCalls.filter((f) => f != friend));
-                    }
-                  });
+                //supabase
+                //  .from("notifications")
+                //  .insert([
+                //    {
+                //      requester: me,
+                //      requested: friend,
+                //      init_at: new Date(),
+                //    },
+                //  ])
+                //  .then(({ data, error }) => {
+                //    if (error) {
+                //      console.log(error);
+                //    }
+                //    if (data) {
+                //      console.log(data);
+                //    }
+                //    if (!error) {
+                //      // remove node from list, the socials have been sent there's no use for it anymore
+                //      setRecentCalls(recentCalls.filter((f) => f != friend));
+                //    }
+                //  });
               }}
               style={{
-                backgroundColor: "#1e1e1e",
                 paddingVertical: 10,
                 paddingHorizontal: 15,
-                borderRadius: 15,
+                borderRadius: 30,
+                borderColor: colours.chordleMyBallsKraz,
+                borderWidth: 2,
               }}
             >
               <Text
                 style={{
                   fontSize: 15,
-                  color: "#CEFFEA",
+                  fontWeight: "bold",
                 }}
               >
                 Send socials
@@ -130,16 +131,16 @@ const RecentCalls = ({ recent_calls }) => {
             <Pressable
               onPress={() => {
                 // remove node from list, the socials have been sent there's no use for it anymore
-                setRecentCalls(recentCalls.filter((f) => f != friend));
+                setRecentCalls(recentCalls.filter((f: string) => f != friend));
               }}
               style={{
-                backgroundColor: "#1e1e1e",
+                backgroundColor: colours.endCallRed,
                 paddingVertical: 8,
                 paddingHorizontal: 10,
-                borderRadius: 15,
+                borderRadius: 30,
               }}
             >
-              <Feather name="x-octagon" size={24} color="red" />
+              <Feather name="x-octagon" size={24} color="white" />
             </Pressable>
           </View>
         </View>
@@ -150,18 +151,45 @@ const RecentCalls = ({ recent_calls }) => {
     <View
       style={{
         flex: 1,
-        borderColor: "black",
-        borderWidth: 3,
         borderRadius: 20,
-        width: "100%",
-        height: 200,
+        borderWidth: 3,
+        borderColor: colours.chordleMyBallsKraz,
+        paddingHorizontal: 5,
       }}
     >
-      {recentCalls.map((friend: string, index) => {
-        return <FriendTile friend={friend} me={me} key={index} />;
-      })}
+      <ScrollView
+        contentContainerStyle={{
+          flex: 1,
+          gap: 15,
+          justifyContent: "space-evenly",
+          paddingVertical: 20,
+        }}
+      >
+        {recentCalls.map((friend: string, index: number) => (
+          <View
+            key={index}
+            style={{
+              flex: 1,
+            }}
+          >
+            <FriendTile friend={friend} me={me} index={index} />
+            {index !== recentCalls.length - 1 && (
+              <View
+                style={{
+                  alignSelf: "center",
+                  backgroundColor: "#1e1e1e",
+                  height: 0.5,
+                  width: "30%",
+                }}
+              />
+            )}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
-export default RecentCalls;
+export default React.memo(RecentCalls, (prevProps, nextProps) => {
+  return prevProps.recent_calls === nextProps.recent_calls;
+});
