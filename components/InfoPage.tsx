@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { Text, SafeAreaView, KeyboardAvoidingView } from "react-native";
 import colours from "../styles/colours";
 import InfoPageProps from "../types/InfoPageProps";
 // entry point, check for auth and render welcome page if not authed, else, reroute to home page

@@ -14,8 +14,9 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    "preview": {
-      "distribution": "internal"
+    "testflight": {
+      "distribution": "store",
+      "autoIncrement": true
     },
     "production": {}
   },

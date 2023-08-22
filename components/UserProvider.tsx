@@ -2,7 +2,6 @@ import { useUser } from "@clerk/clerk-expo";
 import supabase from "../hooks/initSupabase";
 import Users from "../types/users";
 import { createContext, useState, useEffect, useContext } from "react";
-import RequirementsCheck from "./RequirementsCheck";
 
 // Create the context
 const UserInfoContext = createContext<Users | null | "loading">(null);

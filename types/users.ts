@@ -10,7 +10,8 @@ type Users = {
   created_at: Date | null;
   email_verified: boolean | null;
   anecdote: string | null;
-  recent_calls: Friend[] | null;
+  recent_calls: string[] | null;
+  recent_calls_show: string[] | null;
   requests: string[] | null;
 };
 

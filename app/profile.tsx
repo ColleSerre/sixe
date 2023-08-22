@@ -8,32 +8,72 @@ import {
 } from "react-native";
 import { useUserInfo } from "../components/UserProvider";
 import { FontAwesome } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import colours from "../styles/colours";
-import { useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import supabase from "../hooks/initSupabase";
 import { useClerk, useUser } from "@clerk/clerk-expo";
+import ProfilePicture from "../components/ProfilePicture";
 
-const ProfilePage = ({ navigation }) => {
+const ProfilePage = ({ navigation, route }) => {
   const clerk = useClerk();
   const user = useUserInfo();
   const uid = useUser().user.id;
+
+  type State = {
+    editable: boolean;
+    socials: {
+      snapchat: string | null;
+      instagram: string | null;
+      linkedin: string | null;
+      tiktok: string | null;
+    };
+    anecdote: string | null;
+    username: string;
+    profile_picture: string;
+  };
 
   if (user == "loading" || user == null) {
     return <></>;
   }
 
-  const EditProfilePageValues = {
-    editable: useState(false),
+  const initialState: State = {
+    editable: false,
     socials: {
-      snapchat: useState(user.socials["snapchat"]),
-      instagram: useState(user.socials["instagram"]),
-      linkedin: useState(user.socials["linkedin"]),
+      snapchat: user.socials["snapchat"],
+      instagram: user.socials["instagram"],
+      linkedin: user.socials["linkedin"],
     },
-    anecdote: useState(user.anecdote),
-    username: useState(user.username),
-    profile_picture: useState(user.profile_picture),
+    anecdote: user.anecdote,
+    username: user.username,
+    profile_picture: user.profile_picture,
   };
+
+  const reducer = (
+    state: State,
+    action: { type: string; payload: any }
+  ): State => {
+    switch (action.type) {
+      case "SET_EDITABLE":
+        return { ...state, editable: action.payload };
+      case "SET_SOCIAL":
+        return {
+          ...state,
+          socials: {
+            ...state.socials,
+            [action.payload.key]: action.payload.value,
+          },
+        };
+      case "SET_ANECDOTE":
+        return { ...state, anecdote: action.payload };
+      case "SET_USERNAME":
+        return { ...state, username: action.payload };
+      // Handle other cases if needed
+      default:
+        return state;
+    }
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const TextInputEditStyle = {
     borderColor: colours.chordleMyBallsKraz,
@@ -46,7 +86,12 @@ const ProfilePage = ({ navigation }) => {
     color: "black",
   };
 
-  const Usernames = (socials: Map<string, string>) => {
+  const Usernames = (socials: {
+    snapchat: string | null;
+    instagram: string | null;
+    tiktok: string | null;
+    linkedin: string | null;
+  }) => {
     const Icons = {
       snapchat: <FontAwesome name="snapchat-ghost" size={16} color="yellow" />,
       instagram: <FontAwesome name="instagram" size={24} color="black" />,
@@ -54,14 +99,15 @@ const ProfilePage = ({ navigation }) => {
         <FontAwesome
           name="linkedin"
           size={16}
-          color={EditProfilePageValues.editable[0] ? "black" : "blue"}
+          color={state.editable ? "black" : "blue"}
         />
       ),
     };
 
     const PillStyle = {
+      paddingHorizontal: 15,
+      paddingVertical: 13,
       borderRadius: 30,
-      padding: 12,
       fontSize: 16,
       fontWeight: "600",
       flexDirection: "row",
@@ -70,30 +116,72 @@ const ProfilePage = ({ navigation }) => {
       backgroundColor: "white",
     };
 
+    // TODO: add tiktok
+
+    const presentSocials = Object.entries(socials).filter((social) => {
+      if (social[1] == null || social[1] == "") {
+        return false;
+      }
+      return social;
+    });
+
+    const unsetSocials = Object.entries(socials).filter((social) => {
+      if (social[1] == null || social[1] == "") {
+        return social;
+      }
+    });
+
     const displayed: JSX.Element[] = [];
 
-    for (const social in socials) {
-      if (socials[social].length > 0) {
-        displayed.push(
-          <View key={social} style={PillStyle as ViewStyle}>
-            {Icons[social]}
-            <TextInput
-              editable={EditProfilePageValues.editable[0]}
-              onChangeText={(text) =>
-                EditProfilePageValues.socials[social][1](text)
-              }
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "black",
-              }}
-            >
-              {socials[social]}
-            </TextInput>
-          </View>
-        );
-      }
-    }
+    presentSocials.forEach((social) => {
+      displayed.push(
+        <View key={social[0]} style={PillStyle as ViewStyle}>
+          {Icons[social[0]]}
+          <TextInput
+            editable={state.editable}
+            autoCapitalize="none"
+            onChangeText={(text) =>
+              dispatch({
+                type: "SET_SOCIAL",
+                payload: { key: social[0], value: text },
+              })
+            }
+            style={{
+              fontSize: 16,
+              fontWeight: "600",
+              color: "black",
+            }}
+          >
+            {social[1]}
+          </TextInput>
+        </View>
+      );
+    });
+
+    unsetSocials.forEach((social) => {
+      displayed.push(
+        <View key={social[0]} style={PillStyle as ViewStyle}>
+          {Icons[social[0]]}
+          <TextInput
+            editable={state.editable}
+            autoCapitalize="none"
+            onChangeText={(text) =>
+              dispatch({
+                type: "SET_SOCIAL",
+                payload: { key: social[0], value: text },
+              })
+            }
+            style={{
+              fontSize: 16,
+              fontWeight: "600",
+              color: "black",
+            }}
+            placeholder={social[0]}
+          />
+        </View>
+      );
+    });
+
     return displayed;
   };
 
@@ -111,27 +199,37 @@ const ProfilePage = ({ navigation }) => {
           gap: 20,
         }}
       >
-        <Image
+        <ProfilePicture
           style={{
-            height: 200,
             width: 200,
-            borderRadius: 50,
+            height: 200,
+            borderRadius: 35,
+            backgroundColor: "#D3D3D3",
           }}
-          source={user.profile_picture}
-          cachePolicy="memory-disk"
         />
         <TextInput
-          editable={EditProfilePageValues.editable[0]}
+          editable={state.editable}
           style={
-            EditProfilePageValues.editable[0]
+            state.editable
               ? ({ ...TextInputEditStyle, ...TextStyle } as ViewStyle)
               : ({ ...TextStyle } as ViewStyle)
           }
-          onChangeText={(text) => EditProfilePageValues.username[1](text)}
+          onChangeText={(text) => {
+            dispatch({ type: "SET_USERNAME", payload: text });
+          }}
         >
-          {user.username}
+          {state.username}
         </TextInput>
-        {Usernames(user.socials)}
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 10,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {Usernames(state.socials)}
+        </View>
         <Pressable
           onPress={() => {
             clerk.signOut();
@@ -153,15 +251,15 @@ const ProfilePage = ({ navigation }) => {
           paddingVertical: 40,
           paddingHorizontal: 30,
           borderRadius: 20,
-          borderWidth: EditProfilePageValues.editable[0] ? 3 : 0,
+          borderWidth: state.editable ? 3 : 0,
           borderColor: colours.chordleMyBallsKraz,
-          backgroundColor: EditProfilePageValues.editable[0]
+          backgroundColor: state.editable
             ? "white"
             : colours.chordleMyBallsKraz,
         }}
       >
-        {(!user.anecdote && EditProfilePageValues.editable[0] === false) ||
-        EditProfilePageValues.anecdote[0] === "" ? (
+        {(!user.anecdote && state.editable === false) ||
+        (state.anecdote === "" && state.editable === false) ? (
           <>
             <Text
               style={{
@@ -185,36 +283,27 @@ const ProfilePage = ({ navigation }) => {
               }
             </Text>
           </>
-        ) : user.anecdote?.length > 0 ||
-          EditProfilePageValues.anecdote[0] !== user.anecdote ? (
-          <TextInput
-            editable={EditProfilePageValues.editable[0]}
-            multiline={true}
-            style={{
-              color: EditProfilePageValues.editable[0]
-                ? colours.chordleMyBallsKraz
-                : "white",
-              fontSize: 20,
-              fontWeight: "700",
-            }}
-            onChangeText={(text) => {
-              EditProfilePageValues.anecdote[1](text);
-            }}
-          >
-            {EditProfilePageValues.anecdote[0]}
-          </TextInput>
         ) : (
           <TextInput
-            placeholder="Tell us something about yourself..."
+            editable={state.editable}
+            multiline={true}
+            placeholder={
+              state.anecdote.length < 1
+                ? "Tell us something about yourself..."
+                : ""
+            }
             style={{
-              color: colours.chordleMyBallsKraz,
+              color: state.editable ? colours.chordleMyBallsKraz : "white",
               fontSize: 20,
               fontWeight: "700",
             }}
             onChangeText={(text) => {
-              EditProfilePageValues.anecdote[1](text);
+              dispatch({ type: "SET_ANECDOTE", payload: text });
+              console.log(text);
             }}
-          />
+          >
+            {state.anecdote}
+          </TextInput>
         )}
       </View>
       <Pressable
@@ -226,40 +315,37 @@ const ProfilePage = ({ navigation }) => {
           justifyContent: "center",
           borderRadius: 30,
         }}
-        onPress={() =>
-          EditProfilePageValues.editable[1](!EditProfilePageValues.editable[0])
-        }
+        onPress={async () => {
+          if (state.editable) {
+            // update user
+            const { data, error } = await supabase
+              .from("users")
+              .update({
+                username: state.username,
+                socials: {
+                  snapchat: state.socials["snapchat"],
+                  instagram: state.socials["instagram"],
+                  linkedin: state.socials["linkedin"],
+                },
+                anecdote: state.anecdote,
+              })
+              .eq("uid", uid);
+            if (error) {
+              console.error(error);
+            } else {
+              dispatch({ type: "SET_EDITABLE", payload: false });
+            }
+          } else {
+            dispatch({ type: "SET_EDITABLE", payload: true });
+          }
+        }}
       >
         <Text
           style={{
             color: "white",
           }}
-          onPress={async () => {
-            if (EditProfilePageValues.editable[0]) {
-              // update user
-              const { data, error } = await supabase
-                .from("users")
-                .update({
-                  username: EditProfilePageValues.username[0],
-                  socials: {
-                    snapchat: EditProfilePageValues.socials["snapchat"][0],
-                    instagram: EditProfilePageValues.socials["instagram"][0],
-                    linkedin: EditProfilePageValues.socials["linkedin"][0],
-                  },
-                  anecdote: EditProfilePageValues.anecdote[0],
-                })
-                .eq("uid", uid);
-              if (error) {
-                console.error(error);
-              } else {
-                EditProfilePageValues.editable[1](false);
-              }
-            } else {
-              EditProfilePageValues.editable[1](true);
-            }
-          }}
         >
-          {EditProfilePageValues.editable[0] ? "Done" : "Edit"}
+          {state.editable ? "Done" : "Edit"}
         </Text>
       </Pressable>
     </SafeAreaView>

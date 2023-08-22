@@ -1,11 +1,6 @@
 import InfoPage from "../components/InfoPage";
 import { Pressable, View, Text } from "react-native";
-import {
-  Camera,
-  CameraCapturedPicture,
-  CameraType,
-  ImageType,
-} from "expo-camera";
+import { Camera, CameraCapturedPicture, CameraType } from "expo-camera";
 import { useRef, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
 import supabase from "../hooks/initSupabase";
@@ -14,7 +9,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import colours from "../styles/colours";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { decode } from "base64-arraybuffer";
 import { Snackbar } from "react-native-paper";
 
@@ -51,10 +46,7 @@ const SetProfilePicture = () => {
             onPress={async () => {
               if (!photo && !hasPermission) {
                 const c = await Camera.requestCameraPermissionsAsync();
-                const m = await Camera.requestMicrophonePermissionsAsync();
-                setHasPermission(
-                  c.status === "granted" && m.status === "granted"
-                );
+                setHasPermission(c.status === "granted");
               }
               if (!photo && hasPermission) {
                 setPhoto(
@@ -129,10 +121,14 @@ const SetProfilePicture = () => {
                 base64: true,
               });
 
+              // store base64 image in kv store
+
               setType(CameraType.back); // set to back camera to prevent flip on image render
 
               if (!result.canceled) {
                 setPhoto(result.assets[0]);
+                const path = `profile_picture.jpg`;
+                AsyncStorage.setItem(path, result.assets[0].base64);
               }
             }}
           >
@@ -208,7 +204,6 @@ const SetProfilePicture = () => {
                 backgroundColor: "#D9D9D9",
                 borderRadius: 10,
                 marginBottom: 20,
-                transform: [{ scaleX: type === CameraType.front ? -1 : 1 }],
               }}
             />
             <Pressable

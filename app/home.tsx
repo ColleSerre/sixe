@@ -1,25 +1,18 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  Pressable,
-  ScrollView,
-  Linking,
-  FlatList,
-} from "react-native";
+import { View, Text, SafeAreaView, Pressable, Linking } from "react-native";
 import { useUserInfo } from "../components/UserProvider";
 import Users from "../types/users";
 import colours from "../styles/colours";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import RecentCalls from "./RecentCalls";
+import RecentCalls from "../components/RecentCalls";
 import { useEffect, useState, useRef } from "react";
 
 import { Platform } from "react-native";
 import supabase from "../hooks/initSupabase";
+import NoRecentCall from "../components/NoRecentCall";
+import ProfilePicture from "../components/ProfilePicture";
 
 const IntroSlideShow = ({ navigation }) => {
   const [active, setActive] = useState(0);
@@ -225,7 +218,8 @@ async function registerForPushNotificationsAsync(uid: string) {
 }
 
 const Home = ({ navigation }) => {
-  let user = useRef(useUserInfo()).current;
+  let user = useUserInfo();
+  const [recentCalls, setRecentCalls] = useState([]);
 
   // Push notifications Registration
 
@@ -248,6 +242,8 @@ const Home = ({ navigation }) => {
   useEffect(() => {
     if (user) {
       const _u = user as Users;
+
+      setRecentCalls(_u.recent_calls_show);
 
       if (_u.uid && _u.push_token == null) {
         registerForPushNotificationsAsync(_u.uid).then(
@@ -284,7 +280,7 @@ const Home = ({ navigation }) => {
     }
   }, [user]);
 
-  const LaunchCall = () => {
+  const LaunchCall = ({ navigation }) => {
     return (
       <Pressable
         style={{
@@ -367,7 +363,7 @@ const Home = ({ navigation }) => {
               paddingVertical: 15,
               paddingHorizontal: 13,
               borderRadius: 15,
-              height: 150,
+              height: 170,
               alignItems: "center",
               justifyContent: "space-between",
             }}
@@ -377,35 +373,42 @@ const Home = ({ navigation }) => {
                 navigation.navigate("Profile");
               }}
             >
-              <Image
-                source={u.profile_picture}
+              <ProfilePicture
                 style={{
-                  height: 40,
-                  width: 40,
-                  borderRadius: 25,
+                  width: 45,
+                  height: 45,
+                  borderRadius: 35,
+                  backgroundColor: "#D3D3D3",
                 }}
-                cachePolicy="disk"
               />
             </Pressable>
-            <Text
-              style={{
-                fontSize: 30,
+            <Pressable
+              onPress={() => {
+                navigation.navigate("NewFeatures");
               }}
             >
-              ✨
-            </Text>
+              <Text
+                style={{
+                  fontSize: 30,
+                }}
+              >
+                ✨
+              </Text>
+            </Pressable>
             <Pressable
               onPress={() => {
                 navigation.navigate("Report");
               }}
             >
-              <Ionicons name="flag" size={29} color="red" />
+              <Ionicons name="flag" size={25} color="red" />
             </Pressable>
           </View>
         </View>
+
+        {/* Wait until critical mass of users is reached before enabling topic picker ; here I don't make it a component to prevent scroll reset on setState (only way i've found: https://stackoverflow.com/questions/61293265/react-native-scrollview-resets-positon-on-setstate)
         <View>
-          {/*// Topic Picker is put here to prevent scroll reset on setState (only way i've found: https://stackoverflow.com/questions/61293265/react-native-scrollview-resets-positon-on-setstate)
-           */}
+          
+          
           <FlatList
             horizontal={true}
             data={Topics}
@@ -443,8 +446,10 @@ const Home = ({ navigation }) => {
             }}
           />
         </View>
+         
+        */}
 
-        {u.recent_calls.length < 1 ? (
+        {!recentCalls ? (
           <IntroSlideShow navigation={navigation} />
         ) : (
           <View
@@ -456,16 +461,25 @@ const Home = ({ navigation }) => {
               style={{
                 fontSize: 25,
                 fontWeight: "bold",
-                marginBottom: 20,
+                marginBottom: 15,
               }}
             >
               Recent Calls
             </Text>
-            <RecentCalls recent_calls={u.recent_calls} />
+            {u.recent_calls.length < 1 ? (
+              <IntroSlideShow navigation={navigation} />
+            ) : u.recent_calls_show.length < 1 ? (
+              <NoRecentCall />
+            ) : (
+              <RecentCalls
+                recent_calls={u.recent_calls_show}
+                navigation={navigation}
+              />
+            )}
           </View>
         )}
 
-        <LaunchCall />
+        <LaunchCall navigation={navigation} />
       </SafeAreaView>
     );
   } else {

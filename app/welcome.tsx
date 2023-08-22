@@ -28,9 +28,9 @@ const Welcome = () => {
   const { signIn } = useSignIn();
 
   const [login, setLogin] = React.useState(false);
-  const [username, setUsername] = React.useState<string>("");
-  const [emailAddress, setEmailAddress] = React.useState<string>("");
-  const [password, setPassword] = React.useState<string>("");
+  const [username, setUsername] = React.useState<string>();
+  const [emailAddress, setEmailAddress] = React.useState<string>();
+  const [password, setPassword] = React.useState<string>();
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
   const [snackbarContent, setSnackbarContent] = useState("");
@@ -41,7 +41,8 @@ const Welcome = () => {
     }
 
     if (emailAddress && username && password) {
-      if (emailAddress.endsWith("@ucl.ac.uk") && username.length > 0) {
+      // add check if the email address is a UCL email address.
+      if (username.length > 0) {
         if (!isLoaded) {
           return;
         }
@@ -67,7 +68,7 @@ const Welcome = () => {
             onLogin();
           } else {
             console.log(err.errors[0].code);
-            setSnackbarContent(err.errors[0].message);
+            setSnackbarContent("Auth error " + err.errors[0].message);
           }
         }
       } else {
@@ -94,12 +95,14 @@ const Welcome = () => {
         username: username,
         email_verified: true,
         email: emailAddress,
-
         profile_picture: "",
         uid: completeSignUp.createdUserId,
         anecdote: undefined,
         socials: undefined,
         recent_calls: [],
+        push_token: "",
+        recent_calls_show: [],
+        requests: [],
       };
 
       const { data, error } = await supabase.from("users").insert([payload]);

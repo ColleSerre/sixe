@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Linking, TextInput } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import InfoPage from "../components/InfoPage";
 import InfoPageProps from "../types/InfoPageProps";
 import supabase from "../hooks/initSupabase";
@@ -17,26 +17,28 @@ const ReportScreen = ({ navigation }) => {
 
   const [users, setUsers] = useState<Users[] | undefined>();
 
-  const fetchUsers = async () => {
-    const recent_uids = await supabase
-      .from("users")
-      .select("recent_calls")
-      .eq("uid", me);
-
-    recent_uids.data[0].recent_calls.forEach(async (uid: string) => {
-      const { data, error } = await supabase
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const recent_uids = await supabase
         .from("users")
-        .select("*")
-        .eq("uid", uid);
-      if (error) {
-        console.log(error);
-      } else if (data) {
-        if (users === undefined) {
-          setUsers([data[0] as Users]);
-        } else setUsers([...users, data[0] as Users]);
-      }
-    });
-  };
+        .select("recent_calls")
+        .eq("uid", me);
+
+      recent_uids.data[0].recent_calls.forEach(async (uid: string) => {
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("uid", uid);
+        if (error) {
+          console.log(error);
+        } else if (data) {
+          setUsers(data as Users[]);
+        }
+      });
+    };
+
+    fetchUsers();
+  }, []);
 
   const [selectedUserIndex, setSelectedUserIndex] = useState(0);
 
@@ -235,11 +237,6 @@ const ReportScreen = ({ navigation }) => {
       </View>
     ),
   };
-
-  if (users === undefined) {
-    fetchUsers();
-    return <Text>Loading...</Text>;
-  }
 
   return InfoPage(reportScreenProps as InfoPageProps);
 };

@@ -2,24 +2,37 @@
   "expo": {
     "name": "Greet",
     "slug": "sixe",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#ffffff"
+    },
+    "privacy": "unlisted",
     "scheme": "acme",
     "web": {
       "bundler": "metro"
     },
+    "jsEngine": "hermes",
     "ios": {
+      "jsEngine": "hermes",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": "NO",
         "NSCameraUsageDescription": "This app uses the camera to conduct video calls.",
         "NSMicrophoneUsageDescription": "This app uses the microphone to conduct video calls."
       },
       "bundleIdentifier": "com.tce.I"
     },
     "android": {
+      "jsEngine": "hermes",
       "package": "com.tce.I",
       "versionCode": 1,
-      "permissions": ["CAMERA", "RECORD_AUDIO"],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ],
       "googleServicesFile": "./google-services.json"
     },
     "plugins": [
@@ -34,6 +47,10 @@
       "eas": {
         "projectId": "38ca343b-bab4-4f76-867a-ea8e204bbe6c"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/38ca343b-bab4-4f76-867a-ea8e204bbe6c"
     }
   }
 }

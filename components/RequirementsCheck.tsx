@@ -6,25 +6,29 @@ import SetProfilePicture from "../app/SetProfilePicture";
 import SetSocials from "../app/SetSocials";
 import Welcome from "../app/welcome";
 import { useEffect, useState, useContext } from "react";
+import { SplashScreen } from "expo-router";
 
+// here we can add locale also if needed
 const Routing = ({ children }) => {
   const clerk = useUser()?.user?.id;
   const userInfo = useContext(UserContext);
   const [loading, setLoading] = useState(true);
-  const [Screen, setScreen] = useState<JSX.Element>(<></>);
+  const [Screen, setScreen] = useState<JSX.Element>(<SplashScreen />);
   const [user, setUser] = useState<Users | null>(null);
 
   const usersChanges = supabase.channel("any").on(
     "postgres_changes",
     {
-      event: "UPDATE",
+      event: "*",
       schema: "public",
       table: "users",
       filter: "uid=eq." + clerk,
     },
     (payload) => {
-      console.log("User info updated");
-      setUser(payload.new as Users);
+      if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
+        console.log("User info updated");
+        setUser(payload.new as Users);
+      }
     }
   );
 
@@ -39,10 +43,22 @@ const Routing = ({ children }) => {
     if (!clerk) {
       setScreen(<Welcome />);
     } else if (loading || !user) {
-      setScreen(<></>);
+      if (clerk) {
+        supabase
+          .from("users")
+          .select("*")
+          .eq("uid", clerk)
+          .then(({ data, error }) => {
+            if (data.length > 0) {
+              setUser(data[0]);
+            } else {
+              console.log(error);
+              setUser(null);
+            }
+          });
+      }
     } else {
       const u = user as Users;
-      console.log("Routing: ", u);
       if (!u.profile_picture) {
         console.log("No profile picture");
         setScreen(<SetProfilePicture />);
@@ -50,7 +66,6 @@ const Routing = ({ children }) => {
         console.log("No socials");
         setScreen(<SetSocials />);
       } else {
-        console.log("All requirements met");
         setScreen(children);
       }
     }
@@ -63,8 +78,6 @@ const Routing = ({ children }) => {
   }, []);
 
   usersChanges.subscribe();
-
-  console.log("Routing: ", Screen);
 
   return Screen;
 };
