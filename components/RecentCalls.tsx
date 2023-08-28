@@ -1,38 +1,73 @@
-import { View, Text, Pressable, FlatList } from "react-native";
-import { Image } from "expo-image";
+import { View, FlatList } from "react-native";
 import supabase from "../hooks/initSupabase";
 import { useEffect, useState } from "react";
-import { Feather } from "@expo/vector-icons";
 import { useUser } from "@clerk/clerk-expo";
-import React from "react";
-import colours from "../styles/colours";
 import ExperimentalFriendTile from "./ExperimentalFriendTile";
 import RecentCall from "../types/RecentCall";
 import NoRecentCall from "./NoRecentCall";
 
 const RecentCalls = ({ recent_calls, navigation }) => {
+  // update the recent calls list with the most recent calls
+  const clerk = useUser().user.id;
+
   const [recentCalls, setRecentCalls] = useState<RecentCall[]>(recent_calls);
+
   useEffect(() => {
-    supabase
-      .from("users")
-      .select("uid, profile_picture, username, anecdote, socials")
-      .in("uid", recent_calls)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error(error);
+    const fetchRecentCallsList = async () => {
+      const _calls = await supabase
+        .from("users")
+        .select("recent_calls_show")
+        .eq("uid", clerk);
+
+      if (_calls.data[0].recent_calls_show) {
+        return _calls.data[0].recent_calls_show;
+      } else {
+        return [];
+      }
+    };
+    const fetchRecentCallsData = async (arr) => {
+      supabase
+        .from("users")
+        .select("uid, profile_picture, username, anecdote, socials, degree")
+        .in("uid", [arr])
+        .then(({ data, error }) => {
+          if (error) {
+            console.error(error);
+          } else if (data) {
+            setRecentCalls(data);
+            console.log(data);
+          }
+        });
+    };
+
+    fetchRecentCallsList().then((recent_call_list) => {
+      if (recent_call_list.length == 0) {
+        setRecentCalls([]);
+      } else {
+        console.log(recent_call_list);
+        fetchRecentCallsData(recent_call_list);
+      }
+    });
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      // The screen is focused
+      fetchRecentCallsList().then((recent_call_list) => {
+        if (recent_call_list.length == 0) {
+          setRecentCalls([]);
         } else {
-          setRecentCalls(data);
+          console.log(recent_call_list);
+          fetchRecentCallsData(recent_call_list);
         }
       });
-  }, [recent_calls]);
-
-  const me = useUser().user.id;
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const removeFriendFromList = (friendUid: string) => {
     supabase
       .from("users")
       .select("recent_calls_show")
-      .eq("uid", me)
+      .eq("uid", clerk)
       .then(({ data, error }) => {
         if (data[0].recent_calls_show) {
           // remove friend.uid from recent_calls
@@ -47,7 +82,7 @@ const RecentCalls = ({ recent_calls, navigation }) => {
             .update({
               recent_calls_show: _updatedCallList,
             })
-            .eq("uid", me)
+            .eq("uid", clerk)
             .then(({ data, error }) => {
               if (error) {
                 console.log("Error updating recent calls: ", error);
@@ -66,15 +101,10 @@ const RecentCalls = ({ recent_calls, navigation }) => {
       });
   };
 
-  console.log("recent calls: ", recentCalls);
   return (
     <View
       style={{
         flex: 1,
-        //borderRadius: 20,
-        //borderWidth: 3,
-        //borderColor: colours.chordleMyBallsKraz,
-        //paddingHorizontal: 5,
       }}
     >
       {recentCalls.length > 0 && (
@@ -90,7 +120,7 @@ const RecentCalls = ({ recent_calls, navigation }) => {
             //<FriendTile friend={item} me={me} index={index} />
             return (
               <ExperimentalFriendTile
-                me={me}
+                me={clerk}
                 friend={item}
                 navigation={navigation}
                 onPress={removeFriendFromList}
@@ -104,6 +134,4 @@ const RecentCalls = ({ recent_calls, navigation }) => {
   );
 };
 
-export default React.memo(RecentCalls, (prevProps, nextProps) => {
-  return prevProps.recent_calls === nextProps.recent_calls;
-});
+export default RecentCalls;

@@ -17,6 +17,13 @@ import supabase from "../hooks/initSupabase";
 import colours from "../styles/colours";
 import { Keyboard } from "react-native";
 import textInputStyles from "../styles/TextInput";
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from "react-native-confirmation-code-field";
+import { Picker } from "@react-native-picker/picker";
 
 const Welcome = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -169,59 +176,69 @@ const Welcome = () => {
               autoComplete="email"
               autoCapitalize="none"
               autoCorrect={false}
+              keyboardType="email-address"
               placeholderTextColor={"black"}
               style={{ ...textInputStyles.NeoBrutalistTextField }}
             />
-            <View
+            <TextInput
+              placeholder="Password"
+              onChangeText={(_new) => setPassword(_new)}
+              placeholderTextColor={"black"}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={{ ...textInputStyles.NeoBrutalistTextField }}
+            />
+
+            <TextInput
+              placeholder="Degree"
+              onChangeText={(_new) => setPassword(_new)}
+              placeholderTextColor={"black"}
+              autoCapitalize="none"
+              autoCorrect={false}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
+                ...textInputStyles.NeoBrutalistTextField,
               }}
-            >
-              <TextInput
-                placeholder="Password"
-                onChangeText={(_new) => setPassword(_new)}
-                placeholderTextColor={"black"}
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={{ ...textInputStyles.NeoBrutalistTextField }}
-              />
-            </View>
+            />
           </View>
         )}
 
         {pendingVerification && (
           <View
             style={{
-              width: "80%",
+              height: 50,
+              width: "90%",
               alignSelf: "center",
+              justifyContent: "space-between",
             }}
           >
-            <TextInput
+            <CodeField
               value={code}
-              placeholder="Code..."
-              keyboardType="number-pad"
-              onChangeText={(code) => {
-                setCode(code);
-                if (code.length === 6) {
-                  // hide the keyboard.
+              onChangeText={(_text) => {
+                setCode(_text);
+                if (_text.length === 6) {
                   Keyboard.dismiss();
                 }
               }}
-              style={{
-                padding: 20,
-                backgroundColor: "#F4F2E5",
-
-                shadowOffset: {
-                  width: 0,
-                  height: 4,
-                },
-                shadowRadius: 4,
-                shadowColor: "rgba(0, 0, 0, 0.25)",
-                shadowOpacity: 1,
-                borderRadius: 10,
-              }}
+              cellCount={6}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              renderCell={({ index, symbol, isFocused }) => (
+                <Text
+                  key={index}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    lineHeight: 38,
+                    fontSize: 24,
+                    borderWidth: 2,
+                    borderColor: "#00000030",
+                    borderRadius: 10,
+                    textAlign: "center",
+                  }}
+                >
+                  {symbol || (isFocused ? <Cursor /> : null)}
+                </Text>
+              )}
             />
           </View>
         )}

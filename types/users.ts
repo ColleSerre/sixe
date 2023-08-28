@@ -7,6 +7,7 @@ type Users = {
   email: string | null;
   profile_picture: string | null;
   socials: Map<string, string> | null;
+  degree: string | null;
   created_at: Date | null;
   email_verified: boolean | null;
   anecdote: string | null;

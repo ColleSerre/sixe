@@ -1,9 +1,12 @@
 import { WebView } from "react-native-webview";
 import { useUser } from "@clerk/clerk-expo";
 import colours from "../styles/colours";
+import { useUserInfo } from "./UserProvider";
+import Users from "../types/users";
 
 const Call = ({ navigation }) => {
   const user = useUser().user.id;
+  const userInfo = useUserInfo();
   return (
     <WebView
       originWhitelist={["*"]}
@@ -26,8 +29,11 @@ const Call = ({ navigation }) => {
         uri: `https://webrtc-greet.vercel.app?uid=${user}`,
       }}
       onLoad={(event) => {
-        if (event.nativeEvent.url.endsWith("end")) {
-          navigation.navigate("Home");
+        if (event.nativeEvent.url.endsWith("end") && userInfo) {
+          const u = userInfo as Users;
+          navigation.navigate("Home", {
+            recent_calls_show: u.recent_calls_show,
+          });
         }
       }}
     />

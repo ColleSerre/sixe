@@ -27,6 +27,7 @@ const ProfilePage = ({ navigation, route }) => {
       linkedin: string | null;
       tiktok: string | null;
     };
+    degree: string | null;
     anecdote: string | null;
     username: string;
     profile_picture: string;
@@ -38,6 +39,7 @@ const ProfilePage = ({ navigation, route }) => {
 
   const initialState: State = {
     editable: false,
+    degree: user.degree,
     socials: {
       snapchat: user.socials["snapchat"],
       instagram: user.socials["instagram"],
@@ -47,6 +49,59 @@ const ProfilePage = ({ navigation, route }) => {
     username: user.username,
     profile_picture: user.profile_picture,
   };
+
+  // run every time the page is loaded
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      supabase
+        .from("users")
+        .select("*")
+        .eq("uid", uid)
+        .then(({ data }) => {
+          if (data) {
+            dispatch({
+              type: "SET_SOCIAL",
+              payload: {
+                key: "snapchat",
+                value: data[0].socials["snapchat"],
+              },
+            });
+            dispatch({
+              type: "SET_SOCIAL",
+              payload: {
+                key: "instagram",
+                value: data[0].socials["instagram"],
+              },
+            });
+            dispatch({
+              type: "SET_SOCIAL",
+              payload: {
+                key: "linkedin",
+                value: data[0].socials["linkedin"],
+              },
+            });
+            dispatch({
+              type: "SET_DEGREE",
+              payload: data[0].degree,
+            });
+            dispatch({
+              type: "SET_ANECDOTE",
+              payload: data[0].anecdote,
+            });
+            dispatch({
+              type: "SET_USERNAME",
+              payload: data[0].username,
+            });
+            dispatch({
+              type: "SET_EDITABLE",
+              payload: false,
+            });
+          }
+        });
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const reducer = (
     state: State,
@@ -63,6 +118,8 @@ const ProfilePage = ({ navigation, route }) => {
             [action.payload.key]: action.payload.value,
           },
         };
+      case "SET_DEGREE":
+        return { ...state, degree: action.payload };
       case "SET_ANECDOTE":
         return { ...state, anecdote: action.payload };
       case "SET_USERNAME":
@@ -184,7 +241,6 @@ const ProfilePage = ({ navigation, route }) => {
 
     return displayed;
   };
-
   return (
     <SafeAreaView
       style={{
@@ -199,27 +255,116 @@ const ProfilePage = ({ navigation, route }) => {
           gap: 20,
         }}
       >
-        <ProfilePicture
+        <View
           style={{
-            width: 200,
-            height: 200,
-            borderRadius: 35,
-            backgroundColor: "#D3D3D3",
-          }}
-        />
-        <TextInput
-          editable={state.editable}
-          style={
-            state.editable
-              ? ({ ...TextInputEditStyle, ...TextStyle } as ViewStyle)
-              : ({ ...TextStyle } as ViewStyle)
-          }
-          onChangeText={(text) => {
-            dispatch({ type: "SET_USERNAME", payload: text });
+            width: "100%",
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            paddingHorizontal: 20,
           }}
         >
-          {state.username}
-        </TextInput>
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
+            <ProfilePicture
+              style={{
+                width: 200,
+                height: 200,
+                borderRadius: 35,
+                backgroundColor: "#D3D3D3",
+              }}
+            />
+          </View>
+          <View
+            style={{
+              gap: 10,
+              justifyContent: "center",
+              maxWidth: "40%",
+            }}
+          >
+            <TextInput
+              placeholder="Name"
+              editable={state.editable}
+              textAlign="right"
+              style={
+                state.editable
+                  ? ({
+                      ...TextInputEditStyle,
+                      ...TextStyle,
+                    } as ViewStyle)
+                  : ({
+                      ...TextStyle,
+                    } as ViewStyle)
+              }
+              onChangeText={(text) => {
+                dispatch({ type: "SET_USERNAME", payload: text });
+              }}
+            >
+              {state.username}
+            </TextInput>
+
+            {state.editable ? (
+              <TextInput
+                placeholder="Degree"
+                editable={state.editable}
+                textAlign="right"
+                style={
+                  state.editable
+                    ? ({
+                        ...TextInputEditStyle,
+                        ...TextStyle,
+                      } as ViewStyle)
+                    : ({
+                        ...TextStyle,
+                      } as ViewStyle)
+                }
+                onChangeText={(text) => {
+                  dispatch({ type: "SET_DEGREE", payload: text });
+                }}
+              >
+                {state.degree ? state.degree : ""}
+              </TextInput>
+            ) : (
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "bold",
+                  color: "black",
+                  flexWrap: "wrap",
+                  textAlign: "right",
+                }}
+              >
+                {state.degree ? (
+                  state.degree
+                ) : (
+                  <TextInput
+                    placeholder="Degree"
+                    editable={state.editable}
+                    textAlign="right"
+                    multiline={true}
+                    style={
+                      state.editable
+                        ? ({
+                            ...TextInputEditStyle,
+                            ...TextStyle,
+                          } as ViewStyle)
+                        : ({
+                            ...TextStyle,
+                          } as ViewStyle)
+                    }
+                    onChangeText={(text) => {
+                      dispatch({ type: "SET_DEGREE", payload: text });
+                    }}
+                  >
+                    {state.degree ? state.degree : ""}
+                  </TextInput>
+                )}
+              </Text>
+            )}
+          </View>
+        </View>
         <View
           style={{
             flexDirection: "row",
@@ -288,9 +433,9 @@ const ProfilePage = ({ navigation, route }) => {
             editable={state.editable}
             multiline={true}
             placeholder={
-              state.anecdote.length < 1
+              state.anecdote == "" || state.anecdote == null
                 ? "Tell us something about yourself..."
-                : ""
+                : state.anecdote
             }
             style={{
               color: state.editable ? colours.chordleMyBallsKraz : "white",
@@ -322,6 +467,7 @@ const ProfilePage = ({ navigation, route }) => {
               .from("users")
               .update({
                 username: state.username,
+                degree: state.degree,
                 socials: {
                   snapchat: state.socials["snapchat"],
                   instagram: state.socials["instagram"],

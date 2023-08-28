@@ -13,6 +13,7 @@ import { Platform } from "react-native";
 import supabase from "../hooks/initSupabase";
 import NoRecentCall from "../components/NoRecentCall";
 import ProfilePicture from "../components/ProfilePicture";
+import { Snackbar } from "react-native-paper";
 
 const IntroSlideShow = ({ navigation }) => {
   const [active, setActive] = useState(0);
@@ -227,6 +228,8 @@ const Home = ({ navigation }) => {
   const [notification, setNotification] = useState(null);
   const notificationListener = useRef(null);
   const responseListener = useRef(null);
+
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState("anything");
   const Topics = [
     "Politics 🏛",
@@ -248,6 +251,15 @@ const Home = ({ navigation }) => {
       if (_u.uid && _u.push_token == null) {
         registerForPushNotificationsAsync(_u.uid).then(
           (token: { type: string; data: string }) => {
+            if (
+              token == null ||
+              token.data == null ||
+              token.data == undefined ||
+              token.data == ""
+            ) {
+              return;
+            }
+
             setExpoPushToken(token.data);
             console.log(token.data);
             supabase
@@ -319,6 +331,15 @@ const Home = ({ navigation }) => {
 
   if (user) {
     const u = user as Users;
+
+    useEffect(() => {
+      if (u) {
+        if (u.degree == null || u.degree == "") {
+          setShowSnackbar(true);
+        }
+      }
+    }, [u]);
+
     return (
       <SafeAreaView
         style={{
@@ -468,18 +489,43 @@ const Home = ({ navigation }) => {
             </Text>
             {u.recent_calls.length < 1 ? (
               <IntroSlideShow navigation={navigation} />
-            ) : u.recent_calls_show.length < 1 ? (
-              <NoRecentCall />
             ) : (
               <RecentCalls
-                recent_calls={u.recent_calls_show}
                 navigation={navigation}
+                recent_calls={u.recent_calls_show}
               />
             )}
           </View>
         )}
 
         <LaunchCall navigation={navigation} />
+        <Snackbar
+          visible={showSnackbar}
+          duration={5000}
+          onDismiss={() => {
+            setShowSnackbar(false);
+          }}
+          action={{
+            label: "Dismiss",
+            onPress: () => {
+              setShowSnackbar(false);
+            },
+          }}
+          style={{
+            backgroundColor: "#1E1E1E",
+            borderRadius: 10,
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+            }}
+          >
+            {u.degree == null
+              ? "Did you know: you can add your degree to your profile"
+              : ""}
+          </Text>
+        </Snackbar>
       </SafeAreaView>
     );
   } else {

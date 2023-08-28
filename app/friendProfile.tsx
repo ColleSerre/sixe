@@ -10,6 +10,8 @@ const FriendProfile = ({ route }) => {
 
   const QuickAdd = ({ instagram, snapchat, tiktok, linkedin }) => {
     const QuickAddButton = ({ text, colour, onPress }) => {
+      console.log(text);
+
       return (
         <Pressable
           style={{
@@ -21,12 +23,13 @@ const FriendProfile = ({ route }) => {
             alignItems: "center",
             paddingVertical: 15,
             paddingHorizontal: 25,
+            backgroundColor: colour,
           }}
           onPress={onPress}
         >
           <Text
             style={{
-              color: text === snapchat ? "black" : colour,
+              color: text === "Snapchat" ? "black" : "white",
               fontSize: 15,
               fontWeight: "bold",
             }}
@@ -159,6 +162,18 @@ const FriendProfile = ({ route }) => {
         >
           {friend.username}
         </Text>
+
+        {friend.degree && friend.degree?.length > 0 && (
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "500",
+            }}
+          >
+            {friend.degree}
+          </Text>
+        )}
+
         {friend.anecdote && friend.anecdote?.length > 0 && (
           <Text
             style={{
