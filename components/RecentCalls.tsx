@@ -16,11 +16,21 @@ const RecentCalls = ({ recent_calls, navigation }) => {
     const fetchRecentCallsList = async () => {
       const _calls = await supabase
         .from("users")
-        .select("recent_calls_show")
+        .select("recent_calls_show, blocked")
         .eq("uid", clerk);
 
       if (_calls.data[0].recent_calls_show) {
-        return _calls.data[0].recent_calls_show;
+        // here we are filtering out the blocked users
+        const _filteredCalls = _calls.data[0].recent_calls_show.filter(
+          (uid: string) => {
+            const _blocked = _calls.data[0].blocked;
+            if (_blocked) {
+              return !_blocked.includes(uid);
+            }
+            return true;
+          }
+        );
+        return _filteredCalls;
       } else {
         return [];
       }
@@ -28,13 +38,24 @@ const RecentCalls = ({ recent_calls, navigation }) => {
     const fetchRecentCallsData = async (arr) => {
       supabase
         .from("users")
-        .select("uid, profile_picture, username, anecdote, socials, degree")
+        .select(
+          "uid, profile_picture, username, anecdote, socials, degree, blocked"
+        )
         .in("uid", [arr])
         .then(({ data, error }) => {
           if (error) {
             console.error(error);
           } else if (data) {
-            setRecentCalls(data);
+            // filter out if the user is blocked by the user
+            const _filteredData = data.filter((user) => {
+              const _blocked = user.blocked;
+              if (_blocked) {
+                return !_blocked.includes(clerk);
+              }
+              return true;
+            });
+
+            setRecentCalls(_filteredData);
             console.log(data);
           }
         });

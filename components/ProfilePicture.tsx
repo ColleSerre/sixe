@@ -14,7 +14,7 @@ const ProfilePicture = (props: ProfilePictureProps) => {
   const user = useUser().user.id;
 
   const fetchProfilePicture = async () => {
-    const result = await AsyncStorage.getItem("profile_picture");
+    const result = await AsyncStorage.getItem("profile-picture-url");
     if (result) {
       return result;
     } else {
@@ -24,7 +24,10 @@ const ProfilePicture = (props: ProfilePictureProps) => {
         .eq("uid", user);
 
       if (data) {
-        await AsyncStorage.setItem("profile_picture", data[0].profile_picture);
+        await AsyncStorage.setItem(
+          "profile-picture-url",
+          data[0].profile_picture
+        );
         return data[0].profile_picture;
       }
 
@@ -40,7 +43,7 @@ const ProfilePicture = (props: ProfilePictureProps) => {
         setProfilePicture(result);
       });
     }
-  });
+  }, []);
 
   if (profilePicture) {
     return (

@@ -112,6 +112,10 @@ const App = () => {
                 component={NotificationsScreen}
               />
               <Stack.Screen name="Profile" component={ProfilePage} />
+              <Stack.Screen
+                name="SetProfilePicture"
+                component={SetProfilePicture}
+              />
               <Stack.Screen name="NewFeatures" component={NewFeatures} />
               <Stack.Screen name="Report" component={ReportScreen} />
               <Stack.Screen name="Call" component={Call} />

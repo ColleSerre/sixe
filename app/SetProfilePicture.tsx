@@ -12,8 +12,9 @@ import colours from "../styles/colours";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { decode } from "base64-arraybuffer";
 import { Snackbar } from "react-native-paper";
+import { CacheManager } from "@georstat/react-native-image-cache";
 
-const SetProfilePicture = () => {
+const SetProfilePicture = ({ navigation }) => {
   const userID = useUser().user.id;
   let cameraRef = useRef<Camera>(null);
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,14 @@ const SetProfilePicture = () => {
                       profile_picture: `https://ucjolalmoughwxjvuxkn.supabase.co/storage/v1/object/public/profile_pictures/public/${path}`,
                     })
                     .eq("uid", userID);
+
+                  await AsyncStorage.setItem(
+                    "profile-picture-url",
+                    `https://ucjolalmoughwxjvuxkn.supabase.co/storage/v1/object/public/profile_pictures/public/${path}`
+                  ); // cache profile picture url
+
+                  CacheManager.clearCache(); // remove old cached profile picture
+                  navigation.navigate("Home");
                 }
                 if (error) {
                   console.log(error);
@@ -121,14 +130,10 @@ const SetProfilePicture = () => {
                 base64: true,
               });
 
-              // store base64 image in kv store
-
               setType(CameraType.back); // set to back camera to prevent flip on image render
 
               if (!result.canceled) {
                 setPhoto(result.assets[0]);
-                const path = `profile_picture.jpg`;
-                AsyncStorage.setItem(path, result.assets[0].base64);
               }
             }}
           >

@@ -112,7 +112,7 @@ const IntroSlideShow = ({ navigation }) => {
           justifyContent: "center",
         }}
         onPress={() => {
-          //navigation.navigate("Call");
+          navigation.navigate("Call");
         }}
       >
         <Text
@@ -308,8 +308,9 @@ const Home = ({ navigation }) => {
             width: 0,
             height: 5,
           },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
+          shadowOpacity: 1,
+          shadowRadius: 30,
+          elevation: 10,
         }}
         onPress={() => {
           navigation.navigate("Call");
@@ -331,14 +332,30 @@ const Home = ({ navigation }) => {
 
   if (user) {
     const u = user as Users;
+    const [name, setName] = useState(u.username);
 
     useEffect(() => {
       if (u) {
+        const unsubscribe = navigation.addListener("focus", () => {
+          supabase
+            .from("users")
+            .select("username")
+            .eq("uid", u.uid)
+            .then(({ data, error }) => {
+              if (error) {
+                console.log(error);
+                return;
+              }
+              setName(data[0].username);
+            });
+        });
+
         if (u.degree == null || u.degree == "") {
           setShowSnackbar(true);
         }
+        return unsubscribe;
       }
-    }, [u]);
+    }, [u, navigation]);
 
     return (
       <SafeAreaView
@@ -374,7 +391,7 @@ const Home = ({ navigation }) => {
                 color: colours.chordleMyBallsKraz,
               }}
             >
-              {u.username}
+              {name}
             </Text>
           </View>
 

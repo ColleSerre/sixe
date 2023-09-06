@@ -1,4 +1,7 @@
 import {
+  Button,
+  Keyboard,
+  KeyboardAvoidingView,
   Pressable,
   SafeAreaView,
   Text,
@@ -7,9 +10,9 @@ import {
   ViewStyle,
 } from "react-native";
 import { useUserInfo } from "../components/UserProvider";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import colours from "../styles/colours";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import supabase from "../hooks/initSupabase";
 import { useClerk, useUser } from "@clerk/clerk-expo";
 import ProfilePicture from "../components/ProfilePicture";
@@ -44,6 +47,7 @@ const ProfilePage = ({ navigation, route }) => {
       snapchat: user.socials["snapchat"],
       instagram: user.socials["instagram"],
       linkedin: user.socials["linkedin"],
+      tiktok: user.socials["tiktok"],
     },
     anecdote: user.anecdote,
     username: user.username,
@@ -150,8 +154,20 @@ const ProfilePage = ({ navigation, route }) => {
     linkedin: string | null;
   }) => {
     const Icons = {
-      snapchat: <FontAwesome name="snapchat-ghost" size={16} color="yellow" />,
-      instagram: <FontAwesome name="instagram" size={24} color="black" />,
+      snapchat: (
+        <FontAwesome
+          name="snapchat-ghost"
+          size={16}
+          color={state.editable ? "black" : "yellow"}
+        />
+      ),
+      instagram: (
+        <FontAwesome
+          name="instagram"
+          size={24}
+          color={state.editable ? "black" : "purple"}
+        />
+      ),
       linkedin: (
         <FontAwesome
           name="linkedin"
@@ -159,6 +175,7 @@ const ProfilePage = ({ navigation, route }) => {
           color={state.editable ? "black" : "blue"}
         />
       ),
+      tiktok: <FontAwesome5 name="tiktok" size={18} color="black" />,
     };
 
     const PillStyle = {
@@ -197,6 +214,7 @@ const ProfilePage = ({ navigation, route }) => {
           <TextInput
             editable={state.editable}
             autoCapitalize="none"
+            returnKeyType="done"
             onChangeText={(text) =>
               dispatch({
                 type: "SET_SOCIAL",
@@ -222,6 +240,7 @@ const ProfilePage = ({ navigation, route }) => {
           <TextInput
             editable={state.editable}
             autoCapitalize="none"
+            returnKeyType="done"
             onChangeText={(text) =>
               dispatch({
                 type: "SET_SOCIAL",
@@ -251,6 +270,7 @@ const ProfilePage = ({ navigation, route }) => {
     >
       <View
         style={{
+          marginTop: 40,
           alignItems: "center",
           gap: 20,
         }}
@@ -268,14 +288,24 @@ const ProfilePage = ({ navigation, route }) => {
               flex: 1,
             }}
           >
-            <ProfilePicture
-              style={{
-                width: 200,
-                height: 200,
-                borderRadius: 35,
-                backgroundColor: "#D3D3D3",
+            <Pressable
+              onPress={() => {
+                if (state.editable) {
+                  navigation.navigate("SetProfilePicture");
+                }
               }}
-            />
+            >
+              <ProfilePicture
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: 35,
+                  backgroundColor: "#D3D3D3",
+                  borderColor: colours.chordleMyBallsKraz,
+                  borderWidth: state.editable ? 4 : 0,
+                }}
+              />
+            </Pressable>
           </View>
           <View
             style={{
@@ -288,6 +318,7 @@ const ProfilePage = ({ navigation, route }) => {
               placeholder="Name"
               editable={state.editable}
               textAlign="right"
+              returnKeyType="done"
               style={
                 state.editable
                   ? ({
@@ -310,6 +341,7 @@ const ProfilePage = ({ navigation, route }) => {
                 placeholder="Degree"
                 editable={state.editable}
                 textAlign="right"
+                returnKeyType="done"
                 style={
                   state.editable
                     ? ({
@@ -391,10 +423,11 @@ const ProfilePage = ({ navigation, route }) => {
       </View>
       <View
         style={{
-          height: "35%",
+          flex: 1,
           width: "80%",
           paddingVertical: 40,
           paddingHorizontal: 30,
+          marginVertical: 40,
           borderRadius: 20,
           borderWidth: state.editable ? 3 : 0,
           borderColor: colours.chordleMyBallsKraz,
@@ -403,8 +436,25 @@ const ProfilePage = ({ navigation, route }) => {
             : colours.chordleMyBallsKraz,
         }}
       >
-        {(!user.anecdote && state.editable === false) ||
-        (state.anecdote === "" && state.editable === false) ? (
+        {(user.anecdote || state.anecdote.length > 0) && !state.editable ? (
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                fontSize: 20,
+                fontWeight: "600",
+                flex: 1,
+              }}
+            >
+              {state.anecdote}
+            </Text>
+          </View>
+        ) : (!user.anecdote && state.editable === false) ||
+          (state.anecdote === "" && state.editable === false) ? (
           <>
             <Text
               style={{
@@ -429,26 +479,45 @@ const ProfilePage = ({ navigation, route }) => {
             </Text>
           </>
         ) : (
-          <TextInput
-            editable={state.editable}
-            multiline={true}
-            placeholder={
-              state.anecdote == "" || state.anecdote == null
-                ? "Tell us something about yourself..."
-                : state.anecdote
-            }
-            style={{
-              color: state.editable ? colours.chordleMyBallsKraz : "white",
-              fontSize: 20,
-              fontWeight: "700",
-            }}
-            onChangeText={(text) => {
-              dispatch({ type: "SET_ANECDOTE", payload: text });
-              console.log(text);
-            }}
-          >
-            {state.anecdote}
-          </TextInput>
+          <>
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                margin: 10,
+              }}
+            >
+              <Button
+                title="Done"
+                onPress={() => {
+                  Keyboard.dismiss();
+                  dispatch({ type: "SET_EDITABLE", payload: false });
+                }}
+                color={colours.chordleMyBallsKraz}
+              />
+            </View>
+            <TextInput
+              editable={state.editable}
+              multiline={true}
+              placeholder={
+                state.anecdote == "" || state.anecdote == null
+                  ? "Tell us something about yourself..."
+                  : state.anecdote
+              }
+              style={{
+                color: state.editable ? colours.chordleMyBallsKraz : "white",
+                fontSize: 20,
+                fontWeight: "700",
+              }}
+              onChangeText={(text) => {
+                dispatch({ type: "SET_ANECDOTE", payload: text });
+                console.log(text);
+              }}
+            >
+              {state.anecdote}
+            </TextInput>
+          </>
         )}
       </View>
       <Pressable
@@ -491,7 +560,7 @@ const ProfilePage = ({ navigation, route }) => {
             color: "white",
           }}
         >
-          {state.editable ? "Done" : "Edit"}
+          {state.editable ? "Submit" : "Edit"}
         </Text>
       </Pressable>
     </SafeAreaView>

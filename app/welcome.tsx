@@ -1,29 +1,21 @@
 import React, { useState } from "react";
 import InfoPage from "../components/InfoPage";
-import { Feather } from "@expo/vector-icons";
 import { useSignUp, useSignIn } from "@clerk/clerk-expo";
 import {
   Pressable,
   View,
   TextInput,
-  Alert,
   Text,
   KeyboardAvoidingView,
+  Linking,
 } from "react-native";
-import { Entypo } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
 import Users from "../types/users";
 import supabase from "../hooks/initSupabase";
 import colours from "../styles/colours";
 import { Keyboard } from "react-native";
 import textInputStyles from "../styles/TextInput";
-import {
-  CodeField,
-  Cursor,
-  useBlurOnFulfill,
-  useClearByFocusCell,
-} from "react-native-confirmation-code-field";
-import { Picker } from "@react-native-picker/picker";
+import { CodeField, Cursor } from "react-native-confirmation-code-field";
 
 const Welcome = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -38,6 +30,7 @@ const Welcome = () => {
   const [username, setUsername] = React.useState<string>();
   const [emailAddress, setEmailAddress] = React.useState<string>();
   const [password, setPassword] = React.useState<string>();
+  const [degree, setDegree] = React.useState<string>();
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
   const [snackbarContent, setSnackbarContent] = useState("");
@@ -49,7 +42,7 @@ const Welcome = () => {
 
     if (emailAddress && username && password) {
       // add check if the email address is a UCL email address.
-      if (username.length > 0) {
+      if (username.length > 0 || !emailAddress.endsWith("@ucl.ac.uk")) {
         if (!isLoaded) {
           return;
         }
@@ -103,6 +96,7 @@ const Welcome = () => {
         email_verified: true,
         email: emailAddress,
         profile_picture: "",
+        degree: degree,
         uid: completeSignUp.createdUserId,
         anecdote: undefined,
         socials: undefined,
@@ -191,7 +185,7 @@ const Welcome = () => {
 
             <TextInput
               placeholder="Degree"
-              onChangeText={(_new) => setPassword(_new)}
+              onChangeText={(_new) => setDegree(_new)}
               placeholderTextColor={"black"}
               autoCapitalize="none"
               autoCorrect={false}
@@ -199,6 +193,36 @@ const Welcome = () => {
                 ...textInputStyles.NeoBrutalistTextField,
               }}
             />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Pressable
+                onPress={() => {
+                  Linking.openURL(
+                    "https://docs.google.com/document/d/1MeS8ylU5LWJy94Z5oPmoTOj4Rr-AvMxL6bJ53kQlA-o/edit?usp=sharing"
+                  );
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "600",
+                  }}
+                >
+                  By signing up, you agree to our{" "}
+                  <Text
+                    style={{
+                      color: colours.chordleMyBallsKraz,
+                    }}
+                  >
+                    Terms of Service
+                  </Text>
+                </Text>
+              </Pressable>
+            </View>
           </View>
         )}
 
