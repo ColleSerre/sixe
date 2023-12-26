@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Greet.app"
-               BlueprintName = "Greet"
-               ReferencedContainer = "container:Greet.xcodeproj">
+               BuildableName = "GreetU.app"
+               BlueprintName = "GreetU"
+               ReferencedContainer = "container:GreetU.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "GreetTests.xctest"
-               BlueprintName = "GreetTests"
-               ReferencedContainer = "container:Greet.xcodeproj">
+               BuildableName = "GreetUTests.xctest"
+               BlueprintName = "GreetUTests"
+               ReferencedContainer = "container:GreetU.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Greet.app"
-            BlueprintName = "Greet"
-            ReferencedContainer = "container:Greet.xcodeproj">
+            BuildableName = "GreetU.app"
+            BlueprintName = "GreetU"
+            ReferencedContainer = "container:GreetU.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Greet.app"
-            BlueprintName = "Greet"
-            ReferencedContainer = "container:Greet.xcodeproj">
+            BuildableName = "GreetU.app"
+            BlueprintName = "GreetU"
+            ReferencedContainer = "container:GreetU.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

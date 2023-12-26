@@ -71,22 +71,6 @@ const NewFeatures = () => {
         </Text>
         <Text style={styles.items}>Report users 🚩</Text>
       </View>
-      <Pressable
-        onPress={() => Linking.openURL("mailto:daren.palmer.22@ucl.ac.uk")}
-      >
-        <Text style={styles.body}>
-          If you have any suggestions I'd be very very thankful to hear them.
-          Shoot me an email at{" "}
-          <Text
-            style={{
-              color: colours.chordleMyBallsKraz,
-            }}
-          >
-            daren.palmer.22@ucl.ac.uk
-          </Text>{" "}
-          for any questions or feedback
-        </Text>
-      </Pressable>
     </SafeAreaView>
   );
 };

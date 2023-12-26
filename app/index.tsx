@@ -9,7 +9,6 @@ import SetSocials from "./SetSocials";
 import Welcome from "./welcome";
 import SetProfilePicture from "./SetProfilePicture";
 import ProfilePage from "./profile";
-import EndOfCall from "../components/RecentCalls";
 import Routing from "../components/RequirementsCheck";
 import Call from "../components/Call";
 import ReportScreen from "./report";
@@ -95,7 +94,7 @@ const App = () => {
   if (!fontsLoaded) {
     return <View></View>;
   }
-
+  console.log(CLERK_PUBLISHABLE_KEY);
   return (
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
@@ -119,7 +118,7 @@ const App = () => {
               <Stack.Screen name="NewFeatures" component={NewFeatures} />
               <Stack.Screen name="Report" component={ReportScreen} />
               <Stack.Screen name="Call" component={Call} />
-              <Stack.Screen name="EndOfCall" component={EndOfCall} />
+              <Stack.Screen name="Welcome" component={Welcome} />
             </Stack.Navigator>
           </Routing>
         </UserInfoProvider>

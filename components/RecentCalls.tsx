@@ -128,7 +128,7 @@ const RecentCalls = ({ recent_calls, navigation }) => {
         flex: 1,
       }}
     >
-      {recentCalls.length > 0 && (
+      {recentCalls?.length > 0 && (
         <FlatList
           showsVerticalScrollIndicator={false}
           data={recentCalls}
@@ -150,7 +150,7 @@ const RecentCalls = ({ recent_calls, navigation }) => {
           }}
         ></FlatList>
       )}
-      {recentCalls.length == 0 && <NoRecentCall />}
+      {recentCalls?.length == 0 && <NoRecentCall />}
     </View>
   );
 };

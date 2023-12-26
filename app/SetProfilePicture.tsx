@@ -59,17 +59,6 @@ const SetProfilePicture = ({ navigation }) => {
                 setContent("Uploading...");
                 setLoading(true);
                 const path = `${userID}.jpg`;
-
-                if (type === CameraType.front) {
-                  const manipResult = await manipulateAsync(
-                    photo.uri,
-                    [{ flip: FlipType.Horizontal }],
-                    { format: SaveFormat.JPEG, base64: true }
-                  );
-
-                  setPhoto(manipResult);
-                }
-
                 const { error } = await supabase.storage
                   .from("profile_pictures")
                   .upload(`public/${path}`, decode(photo.base64), {

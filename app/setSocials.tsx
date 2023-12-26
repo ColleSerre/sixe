@@ -13,6 +13,7 @@ import { useUser } from "@clerk/clerk-expo";
 import textinputStyles from "../styles/TextInput";
 import colours from "../styles/colours";
 import { Snackbar } from "react-native-paper";
+import validateContent from "../hooks/validateContent";
 
 const SetSocials = () => {
   const [instagram, setInstagram] = useState("");
@@ -45,6 +46,24 @@ const SetSocials = () => {
             onPress={async () => {
               if (!instagram && !snapchat && !tiktok && !linkedin) {
                 setSnackbar(true);
+                return;
+              }
+
+              // check for offensive content.
+
+              const validators = [
+                validateContent(instagram),
+                validateContent(snapchat),
+                validateContent(tiktok),
+                validateContent(linkedin),
+              ];
+
+              // if any of the validators return false, then the content is invalid.
+              if (validators.includes(false)) {
+                Alert.alert(
+                  "Oops!",
+                  "Please make sure your usernames don't contain any offensive content."
+                );
                 return;
               }
 

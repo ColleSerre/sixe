@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "578042409908",
+    "project_id": "sixe-3567e",
+    "storage_bucket": "sixe-3567e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578042409908:android:00fb988b09810c436438e1",
+        "android_client_info": {
+          "package_name": "com.tce.I"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "578042409908-hvtkpuj29td193tr66fbo9prpiconmkc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRPcsW3C_wpOiywn0vlrNNNzz2XVLZQpE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "578042409908-hvtkpuj29td193tr66fbo9prpiconmkc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "578042409908-j5oe50ubl8r1f0v9ec21insu9g0aes5g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.palmer.six"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

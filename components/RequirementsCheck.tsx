@@ -7,10 +7,18 @@ import SetSocials from "../app/SetSocials";
 import Welcome from "../app/welcome";
 import { useEffect, useState, useContext } from "react";
 import { SplashScreen } from "expo-router";
+import { createStackNavigator } from "@react-navigation/stack";
+import NewFeatures from "../app/NewFeatures";
+import FriendProfile from "../app/friendProfile";
+import Home from "../app/home";
+import NotificationsScreen from "../app/notifications";
+import ProfilePage from "../app/profile";
+import ReportScreen from "../app/report";
+import Call from "./Call";
 
 // here we can add locale also if needed
 const Routing = ({ children }) => {
-  const clerk = useUser()?.user?.id;
+  const clerk = useUser()?.user;
   const userInfo = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [Screen, setScreen] = useState<JSX.Element>(<SplashScreen />);
@@ -22,7 +30,7 @@ const Routing = ({ children }) => {
       event: "*",
       schema: "public",
       table: "users",
-      filter: "uid=eq." + clerk,
+      filter: "uid=eq." + clerk.id,
     },
     (payload) => {
       if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
@@ -40,20 +48,43 @@ const Routing = ({ children }) => {
   }, [userInfo]);
 
   useEffect(() => {
-    if (!clerk) {
+    if (!clerk.id) {
       setScreen(<Welcome />);
     } else if (loading || !user) {
-      if (clerk) {
+      if (clerk.id) {
         supabase
           .from("users")
           .select("*")
-          .eq("uid", clerk)
+          .eq("uid", clerk.id)
           .then(({ data, error }) => {
             if (data.length > 0) {
               setUser(data[0]);
             } else {
-              console.log(error);
-              setUser(null);
+              // set user data in supabase
+              supabase
+                .from("users")
+                .insert([
+                  {
+                    uid: clerk.id,
+                    username: clerk.username,
+                    email: clerk.emailAddresses[0].emailAddress,
+                    profile_picture: null,
+                    socials: null,
+                    created_at: clerk.createdAt,
+                    email_verified:
+                      clerk.emailAddresses[0].verification.status ===
+                      "verified",
+                    recent_calls_show: [],
+                    recent_calls: [],
+                  },
+                ])
+                .then(({ data, error }) => {
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    console.log("User data set");
+                  }
+                });
             }
           });
       }
@@ -61,7 +92,30 @@ const Routing = ({ children }) => {
       const u = user as Users;
       if (!u.profile_picture) {
         console.log("No profile picture");
-        setScreen(<SetProfilePicture />);
+        const Stack = createStackNavigator();
+
+        setScreen(
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen
+              name="SetProfilePicture"
+              component={SetProfilePicture}
+            />
+            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="FriendProfile" component={FriendProfile} />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+            />
+            <Stack.Screen name="Profile" component={ProfilePage} />
+            <Stack.Screen name="NewFeatures" component={NewFeatures} />
+            <Stack.Screen name="Report" component={ReportScreen} />
+            <Stack.Screen name="Call" component={Call} />
+          </Stack.Navigator>
+        );
       } else if (!u.socials) {
         console.log("No socials");
         setScreen(<SetSocials />);

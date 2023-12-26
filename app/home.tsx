@@ -40,8 +40,8 @@ const IntroSlideShow = ({ navigation }) => {
           fontWeight: "500",
         }}
       >
-        Looking for a tennis partner ? Select the tennis interest to find your
-        next challenger !
+        Once you get on your first call, you'll be able to see your recent calls
+        and add them to your different social media.
       </Text>
     </View>,
     <View
@@ -81,25 +81,6 @@ const IntroSlideShow = ({ navigation }) => {
         }}
       >
         Now, let's get started!
-      </Text>
-      <Text
-        style={{
-          fontSize: 17,
-          fontWeight: "500",
-        }}
-      >
-        <Pressable
-          onPress={() => Linking.openURL("mailto:daren.palmer.22@ucl.ac.uk")}
-        >
-          <Text
-            style={{
-              color: colours.chordleMyBallsKraz,
-            }}
-          >
-            daren.palmer.22@ucl.ac.uk
-          </Text>
-        </Pressable>{" "}
-        for any questions or feedback
       </Text>
       <Pressable
         style={{
@@ -504,7 +485,7 @@ const Home = ({ navigation }) => {
             >
               Recent Calls
             </Text>
-            {u.recent_calls.length < 1 ? (
+            {u.recent_calls?.length < 1 ? (
               <IntroSlideShow navigation={navigation} />
             ) : (
               <RecentCalls

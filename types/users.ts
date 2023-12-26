@@ -6,7 +6,12 @@ type Users = {
   username: string | null;
   email: string | null;
   profile_picture: string | null;
-  socials: Map<string, string> | null;
+  socials: {
+    instagram: string | null;
+    snapchat: string | null;
+    linkedin: string | null;
+    tiktok: string | null;
+  };
   degree: string | null;
   created_at: Date | null;
   email_verified: boolean | null;

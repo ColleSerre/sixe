@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import InfoPage from "../components/InfoPage";
-import { useSignUp, useSignIn } from "@clerk/clerk-expo";
+import { useSignUp, useSignIn, useUser, useClerk } from "@clerk/clerk-expo";
 import {
   Pressable,
   View,
@@ -16,9 +16,11 @@ import colours from "../styles/colours";
 import { Keyboard } from "react-native";
 import textInputStyles from "../styles/TextInput";
 import { CodeField, Cursor } from "react-native-confirmation-code-field";
+import validateContent from "../hooks/validateContent";
 
 const Welcome = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const clerk = useClerk();
   const {
     isLoaded: isLoadedSignIn,
     signIn: signInSignIn,
@@ -27,7 +29,8 @@ const Welcome = () => {
   const { signIn } = useSignIn();
 
   const [login, setLogin] = React.useState(false);
-  const [username, setUsername] = React.useState<string>();
+  const [firstName, setFirstName] = React.useState<string>();
+  const [lastName, setLastName] = React.useState<string>();
   const [emailAddress, setEmailAddress] = React.useState<string>();
   const [password, setPassword] = React.useState<string>();
   const [degree, setDegree] = React.useState<string>();
@@ -40,16 +43,22 @@ const Welcome = () => {
       return;
     }
 
-    if (emailAddress && username && password) {
+    if (emailAddress && firstName && lastName && password) {
       // add check if the email address is a UCL email address.
-      if (username.length > 0 || !emailAddress.endsWith("@ucl.ac.uk")) {
+      if (
+        emailAddress.endsWith("@ucl.ac.uk") &&
+        firstName.length > 0 &&
+        lastName.length > 0 &&
+        password.length > 0
+      ) {
         if (!isLoaded) {
           return;
         }
 
         try {
           await signUp.create({
-            username,
+            firstName,
+            lastName,
             emailAddress,
             password,
           });
@@ -62,13 +71,32 @@ const Welcome = () => {
           // change the UI to our pending section.
           setPendingVerification(true);
         } catch (err: any) {
-          console.log(err.errors[0].code);
           if (err.errors[0].code === "form_identifier_exists") {
             setLogin(true);
             onLogin();
+          } else if (err.errors[0].code === "form_password_too_short") {
+            setSnackbarContent("Password must be at least 8 characters long.");
+          } else if (err.errors[0].message === "Session already exists") {
+            // sign out and try again
+
+            try {
+              await clerk.signOut();
+              await signInSignIn.create({
+                identifier: emailAddress,
+                password: password,
+              });
+
+              if (signInSignIn.status === "complete") {
+                setActiveSignIn({ session: signInSignIn.createdSessionId });
+              } else {
+                console.log(signInSignIn.status);
+              }
+            } catch (err: any) {
+              console.log(err.errors[0].message);
+            }
           } else {
             console.log(err.errors[0].code);
-            setSnackbarContent("Auth error " + err.errors[0].message);
+            console.log(err.errors[0].long_message);
           }
         }
       } else {
@@ -90,9 +118,13 @@ const Welcome = () => {
       });
       setActive({ session: completeSignUp.createdSessionId });
 
+      completeSignUp.emailAddress = emailAddress;
+      completeSignUp.firstName = firstName;
+      completeSignUp.lastName = lastName;
+
       const payload: Users = {
         created_at: new Date(),
-        username: username,
+        username: `${completeSignUp.firstName} ${completeSignUp.lastName}`,
         email_verified: true,
         email: emailAddress,
         profile_picture: "",
@@ -111,27 +143,26 @@ const Welcome = () => {
       if (data) {
         console.log(data);
       }
-
-      if (error) {
-        setSnackbarContent(error.message);
-      }
     } catch (err: any) {
-      console.log(err.errors[0].message);
+      console.log(err.errors[0].long_message);
     }
   };
 
   const onLogin = async () => {
     console.log(emailAddress, password);
+    try {
+      var s = await signInSignIn.create({
+        identifier: emailAddress,
+        password: password,
+      });
 
-    var s = await signInSignIn.create({
-      identifier: emailAddress,
-      password: password,
-    });
-
-    if (s.status === "complete") {
-      setActive({ session: s.createdSessionId });
-    } else {
-      console.log(s.status);
+      if (s.status === "complete") {
+        setActive({ session: s.createdSessionId });
+      } else {
+        console.log(s.status);
+      }
+    } catch (err: any) {
+      console.log(err.errors[0].message);
     }
   };
 
@@ -146,6 +177,7 @@ const Welcome = () => {
           flex: 1,
           justifyContent: "center",
         }}
+        behavior="height"
       >
         {!pendingVerification && (
           <View
@@ -155,15 +187,42 @@ const Welcome = () => {
               gap: 24,
             }}
           >
-            <TextInput
-              placeholder="Username"
-              onChangeText={(_new) => setUsername(_new)}
-              placeholderTextColor={"black"}
-              autoCapitalize={"none"}
-              autoComplete={"off"}
-              autoCorrect={false}
-              style={{ ...textInputStyles.NeoBrutalistTextField, width: "70%" }}
-            />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                gap: 20,
+              }}
+            >
+              <TextInput
+                placeholder="First name"
+                onChangeText={(_new) => setFirstName(_new)}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor={"black"}
+                returnKeyType="done"
+                style={{
+                  ...textInputStyles.NeoBrutalistTextField,
+                  borderColor: "black",
+                  flex: 1,
+                }}
+              />
+              <TextInput
+                placeholder="Last name"
+                onChangeText={(_new) => setLastName(_new)}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor={"black"}
+                returnKeyType="done"
+                style={{
+                  ...textInputStyles.NeoBrutalistTextField,
+                  borderColor: "black",
+                  flex: 1,
+                }}
+              />
+            </View>
             <TextInput
               placeholder="Enter your UCL email"
               onChangeText={(_new) => setEmailAddress(_new)}
@@ -172,15 +231,25 @@ const Welcome = () => {
               autoCorrect={false}
               keyboardType="email-address"
               placeholderTextColor={"black"}
-              style={{ ...textInputStyles.NeoBrutalistTextField }}
+              returnKeyType="done"
+              style={{
+                ...textInputStyles.NeoBrutalistTextField,
+                borderColor: "black",
+              }}
             />
             <TextInput
               placeholder="Password"
               onChangeText={(_new) => setPassword(_new)}
-              placeholderTextColor={"black"}
+              secureTextEntry={true}
               autoCapitalize="none"
               autoCorrect={false}
-              style={{ ...textInputStyles.NeoBrutalistTextField }}
+              keyboardType="email-address"
+              placeholderTextColor={"black"}
+              returnKeyType="done"
+              style={{
+                ...textInputStyles.NeoBrutalistTextField,
+                borderColor: "black",
+              }}
             />
 
             <TextInput
@@ -191,6 +260,7 @@ const Welcome = () => {
               autoCorrect={false}
               style={{
                 ...textInputStyles.NeoBrutalistTextField,
+                borderColor: "black",
               }}
             />
             <View
@@ -266,58 +336,77 @@ const Welcome = () => {
             />
           </View>
         )}
-      </KeyboardAvoidingView>
-
-      <Pressable
-        style={{
-          backgroundColor: colours.chordleMyBallsKraz,
-          borderRadius: 25,
-          width: "60%",
-          height: 50,
-          alignSelf: "center",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        onPress={() => {
-          if (!pendingVerification) {
-            handleSignUp();
-          } else {
-            onVerify();
-          }
-        }}
-      >
-        <Text
+        <Pressable
           style={{
-            color: "white",
-            fontSize: 16,
-            fontWeight: "700",
+            flex: 1,
+            backgroundColor: colours.chordleMyBallsKraz,
+            borderRadius: 25,
+            maxHeight: 50,
+            marginTop: 40,
+            width: "60%",
+            alignSelf: "center",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onPress={() => {
+            try {
+              if (!pendingVerification) {
+                if (firstName.length > 0 && lastName.length > 0) {
+                  validateContent(firstName) && validateContent(lastName)
+                    ? handleSignUp()
+                    : setSnackbarContent("Please use a different username.");
+
+                  if (degree && degree.length > 0) {
+                    validateContent(degree)
+                      ? handleSignUp()
+                      : setSnackbarContent("Please use a different degree.");
+                  }
+                } else {
+                  setSnackbarContent("Please fill in all fields.");
+                }
+
+                handleSignUp();
+              } else {
+                onVerify();
+              }
+            } catch (err: any) {
+              console.log(err);
+            }
           }}
         >
-          {!pendingVerification ? "Create Account" : "Verify"}
-        </Text>
-      </Pressable>
-      <Snackbar
-        visible={login}
-        onDismiss={() => setLogin(false)}
-        duration={5000}
-      >
-        You seem to already have an account, logging you in...
-      </Snackbar>
+          <Text
+            style={{
+              color: "white",
+              fontSize: 16,
+              fontWeight: "700",
+            }}
+          >
+            {!pendingVerification ? "Create Account" : "Verify"}
+          </Text>
+        </Pressable>
+        <Snackbar
+          visible={login}
+          onDismiss={() => setLogin(false)}
+          duration={5000}
+        >
+          You seem to already have an account, logging you in...
+        </Snackbar>
 
-      <Snackbar
-        visible={snackbarContent.length > 0}
-        duration={5000}
-        style={{
-          backgroundColor: "white",
-          borderColor: colours.error,
-          borderRadius: 10,
-          borderWidth: 3,
-          height: 50,
-        }}
-        onDismiss={() => setSnackbarContent("")}
-      >
-        <Text>{snackbarContent}</Text>
-      </Snackbar>
+        <Snackbar
+          visible={snackbarContent.length > 0}
+          duration={5000}
+          style={{
+            backgroundColor: "white",
+            borderColor: colours.error,
+            borderRadius: 10,
+            borderWidth: 3,
+            height: 50,
+          }}
+          onDismiss={() => setSnackbarContent("")}
+        >
+          <Text>{snackbarContent}</Text>
+        </Snackbar>
+      </KeyboardAvoidingView>
     </InfoPage>
   );
 };
